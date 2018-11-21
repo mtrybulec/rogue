@@ -7,12 +7,14 @@
 -include("maze.hrl").
 
 initialize_hero(Maze) ->
-    PosX = rand:uniform(?ScreenWidth),
-    PosY = rand:uniform(?ScreenHeight),
+    X = rand:uniform(?ScreenWidth),
+    Y = rand:uniform(?ScreenHeight),
     
-    case maze:is_empty(Maze, PosX, PosY) of
+    case maze:is_empty(Maze, X, Y) of
          true ->
-             {hero, [PosX, PosY]};
+             {hero, #{
+                 position => {X, Y}
+             }};
          false ->
              initialize_hero(Maze)
     end.

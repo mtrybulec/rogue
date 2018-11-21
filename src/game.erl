@@ -23,22 +23,23 @@ play(Maze, Hero) ->
         Go ->
             case lists:member(Go, [<<"i">>, <<"k">>, <<"j">>, <<"l">>]) of
                 true ->
-                    {hero, [X, Y]} = Hero,
+                    {hero, Data} = Hero,
+                    {X, Y} = maps:get(position, Data),
 
-                    [NewX, NewY] = case Go of
+                    {NewX, NewY} = case Go of
                         <<"i">> ->
-                            [X, Y - 1];
+                            {X, Y - 1};
                         <<"k">> ->
-                            [X, Y + 1];
+                            {X, Y + 1};
                         <<"j">> ->
-                            [X - 1, Y];
+                            {X - 1, Y};
                         <<"l">> ->
-                            [X + 1, Y]
+                            {X + 1, Y}
                     end,
 
                     case maze:is_empty(Maze, NewX, NewY) of
                         true ->
-                            play(Maze, {hero, [NewX, NewY]});
+                            play(Maze, {hero, Data#{position => {NewX, NewY}}});
                         _ ->
                             play(Maze, Hero)
                     end;
