@@ -16,8 +16,7 @@ play(Maze, Hero) ->
 
     case Command of
         "q" ->
-            io:format("Quitting...~n"),
-            ok;
+            console:quit();
         Go ->
             case lists:member(Go, ["i", "k", "j", "l"]) of
                 true ->

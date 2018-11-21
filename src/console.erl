@@ -8,7 +8,9 @@
     goto_xy/2,
 
     draw_screen/2,
-    get_command/0
+    get_command/0,
+    
+    quit/0
 ]).
 
 -include("maze.hrl").
@@ -56,3 +58,7 @@ get_command() ->
     goto_xy(0, ?ScreenHeight),
     {ok, [Command]} = io:fread("Command: ", "~s"),
     Command.
+
+quit() ->
+    io:format("Quitting...~n"),
+    ok.
