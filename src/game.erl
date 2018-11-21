@@ -10,6 +10,7 @@ play() ->
     Maze = maze:generate_maze(),
     Hero = hero:initialize_hero(Maze),
     
+    console:clear_screen(),
     play(Maze, Hero).
 
 play(Maze, Hero) ->

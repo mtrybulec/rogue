@@ -27,8 +27,6 @@ goto_xy(X, Y) ->
     io:format("\033[~w;~wH", [Y, X]).
 
 draw_screen(Maze, Hero) ->
-    clear_screen(),
-    
     draw_maze(Maze),
     draw_hero(Hero).
 
