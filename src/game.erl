@@ -5,6 +5,8 @@
 ]).
 
 play() ->
+    console:start(),
+    
     Maze = maze:generate_maze(),
     Hero = hero:initialize_hero(Maze),
     
@@ -15,24 +17,24 @@ play(Maze, Hero) ->
     Command = console:get_command(),
 
     case Command of
-        "q" ->
+        <<"q">> ->
             console:quit();
         Go ->
-            case lists:member(Go, ["i", "k", "j", "l"]) of
+            case lists:member(Go, [<<"i">>, <<"k">>, <<"j">>, <<"l">>]) of
                 true ->
                     {hero, [X, Y]} = Hero,
-                    
+
                     [NewX, NewY] = case Go of
-                        "i" ->
+                        <<"i">> ->
                             [X, Y - 1];
-                        "k" ->
+                        <<"k">> ->
                             [X, Y + 1];
-                        "j" ->
+                        <<"j">> ->
                             [X - 1, Y];
-                        "l" ->
+                        <<"l">> ->
                             [X + 1, Y]
                     end,
-                    
+
                     case maze:is_empty(Maze, NewX, NewY) of
                         true ->
                             play(Maze, {hero, [NewX, NewY]});

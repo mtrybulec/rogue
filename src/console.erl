@@ -4,6 +4,8 @@
 -module(console).
 
 -export([
+    start/0,
+    
     clear_screen/0,
     goto_xy/2,
 
@@ -14,6 +16,9 @@
 ]).
 
 -include("maze.hrl").
+
+start() ->
+    io:setopts([{binary, true}]).
 
 clear_screen() ->
     io:format("\033[2J").
@@ -56,9 +61,10 @@ draw_hero({hero, [X, Y]} = _Hero) ->
 
 get_command() ->
     goto_xy(0, ?ScreenHeight),
-    {ok, [Command]} = io:fread("Command: ", "~s"),
-    Command.
+    io:get_chars("Command: ", 1).
 
 quit() ->
-    io:format("Quitting...~n"),
+    goto_xy(0, ?ScreenHeight + 1),
+    io:format("Quitting..."),
+    goto_xy(0, ?ScreenHeight + 2),
     ok.
