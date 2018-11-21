@@ -65,6 +65,5 @@ get_command() ->
 
 quit() ->
     goto_xy(0, ?ScreenHeight + 1),
-    io:format("Quitting..."),
-    goto_xy(0, ?ScreenHeight + 2),
+    io:format("Quitting...~n"),
     ok.
