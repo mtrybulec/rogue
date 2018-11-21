@@ -63,10 +63,12 @@ play({game, GameData} = Game) ->
                             {X, Y}
                     end,
     
+                    %% Don't hit the wall - you'll hurt yourself!
                     NewStrength = case maze:is_wall(Maze, NewX, NewY) of
                         true ->
                             Strength - ?StrengthLossOnHittingWall;
                         false ->
+                            %% Running around saps energy...
                             case rand:uniform(?ReciprocalStrengthLossOnMove) of
                                 1 ->
                                     Strength - 1;
