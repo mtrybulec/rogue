@@ -14,5 +14,5 @@ initialize_hero(Maze) ->
          true ->
              {hero, [PosX, PosY]};
          false ->
-            initialize_hero(Maze)
+             initialize_hero(Maze)
     end.
