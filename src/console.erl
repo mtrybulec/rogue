@@ -16,6 +16,7 @@
     
     clear_message/0,
     welcome/0,
+    help/0,
     hint/0,
     dead/0,
     quit/0
@@ -85,7 +86,15 @@ get_command() ->
     %% clear_eol/0 is needed when running from the Erlang shell,
     %% after the user inputs several characters before pressing Enter:
     clear_eol(),
-    io:get_chars("Command: ", 1).
+    Command = io:get_chars("Command: ", 1),
+    case Command of
+        <<"\n">> ->
+            %% Need to ignore this binary when running from the Erlang shell,
+            %% where the command needs to be followed by an Enter.
+            get_command();
+        _ ->
+            Command
+    end.
 
 clear_message() ->
     goto_xy(0, ?MessageRow),
@@ -97,6 +106,24 @@ welcome() ->
     io:format("Welcome to ~s, good luck! Press ? for help.", [?Name]),
     ok.
 
+help() ->
+    clear_screen(),
+    goto_xy(0, 0),
+    io:format("~s help~n", [?Name]),
+    io:format("~n"),
+    io:format("Find the treasure - ~s!~n", [?Treasure]),
+    io:format("~n"),
+    io:format("Commands:~n"),
+    io:format("? - show this screen~n"),
+    io:format("i - go North~n"),
+    io:format("k - go South~n"),
+    io:format("j - go West~n"),
+    io:format("l - go East~n"),
+    io:format("q - quit~n"),
+    io:format("~n"),
+    io:get_chars("Press any key to continue...", 1),
+    clear_screen().
+    
 hint() ->
     clear_message(),
     io:format("Unknown command; press ? for help."),

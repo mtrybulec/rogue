@@ -1,4 +1,5 @@
 -define(Name, <<"Rogue">>).
+-define(Treasure, <<"The Ring of Happiness">>).
 
 -define(ScreenWidth, 180).
 -define(ScreenHeight, 60).
