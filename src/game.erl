@@ -65,15 +65,20 @@ play({game, GameData} = Game) ->
                             Strength
                     end,
 
-                    play({game, GameData#{
-                        hero => {hero, HeroData#{
-                            position => NewPosition,
-                            strength => NewStrength
-                        }},
-                        stats => {stats, StatsData#{
-                            turn => maps:get(turn, StatsData) + 1
-                        }}
-                    }});
+                    case Strength of
+                        0 ->
+                            console:dead();
+                        _ ->
+                            play({game, GameData#{
+                                hero => {hero, HeroData#{
+                                    position => NewPosition,
+                                    strength => NewStrength
+                                }},
+                                stats => {stats, StatsData#{
+                                    turn => maps:get(turn, StatsData) + 1
+                                }}
+                            }})
+                    end;
                 false ->
                     play(Game)
             end

@@ -14,6 +14,7 @@
     draw_screen/1,
     get_command/0,
     
+    dead/0,
     quit/0
 ]).
 
@@ -78,9 +79,15 @@ draw_hero({hero, Data} = _Hero) ->
 
 get_command() ->
     goto_xy(0, ?CommandRow),
+    clear_eol(),
     io:get_chars("Command: ", 1).
+
+dead() ->
+    goto_xy(0, ?MessageRow),
+    io:format("You've used up all of your strength and died; game over.~n"),
+    rip.
 
 quit() ->
     goto_xy(0, ?MessageRow),
     io:format("Quitting...~n"),
-    ok.
+    quit.
