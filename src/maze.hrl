@@ -14,3 +14,4 @@
 
 -define(InitialStrength, 10).
 -define(ReciprocalStrengthLossOnMove, 10).
+-define(StrengthLossOnHittingWall, 1).

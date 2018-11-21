@@ -2,7 +2,8 @@
 
 -export([
     generate_maze/0,
-    is_empty/3
+    is_empty/3,
+    is_wall/3
 ]).
 
 -include("maze.hrl").
@@ -25,4 +26,12 @@ is_empty([{room, {X, Y, Width, Height}} | _T], PosX, PosY) when
 is_empty([_H | T], PosX, PosY) ->
     is_empty(T, PosX, PosY);
 is_empty([], _PosX, _PosY) ->
+    false.
+
+is_wall([{room, {X, Y, Width, Height}} | _T], PosX, PosY) when
+    X == PosX; Y == PosY; X + Width == PosX + 1; Y + Height == PosY + 1 ->
+    true;
+is_wall([_H | T], PosX, PosY) ->
+    is_wall(T, PosX, PosY);
+is_wall([], _PosX, _PosY) ->
     false.

@@ -63,26 +63,33 @@ play({game, GameData} = Game) ->
                             {X, Y}
                     end,
     
-                    NewStrength = case rand:uniform(?ReciprocalStrengthLossOnMove) of
-                        1 ->
-                            Strength - 1;
-                        _ ->
-                            Strength
+                    NewStrength = case maze:is_wall(Maze, NewX, NewY) of
+                        true ->
+                            Strength - ?StrengthLossOnHittingWall;
+                        false ->
+                            case rand:uniform(?ReciprocalStrengthLossOnMove) of
+                                1 ->
+                                    Strength - 1;
+                                _ ->
+                                    Strength
+                            end
                     end,
 
-                    case Strength of
+                    NewGame = {game, GameData#{
+                        hero => {hero, HeroData#{
+                            position => NewPosition,
+                            strength => NewStrength
+                        }},
+                        stats => {stats, StatsData#{
+                            turn => maps:get(turn, StatsData) + 1
+                        }}
+                    }},
+                    
+                    case NewStrength of
                         0 ->
-                            console:dead();
+                            console:dead(NewGame);
                         _ ->
-                            play({game, GameData#{
-                                hero => {hero, HeroData#{
-                                    position => NewPosition,
-                                    strength => NewStrength
-                                }},
-                                stats => {stats, StatsData#{
-                                    turn => maps:get(turn, StatsData) + 1
-                                }}
-                            }})
+                            play(NewGame)
                     end;
                 false ->
                     console:hint(),

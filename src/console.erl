@@ -18,7 +18,7 @@
     welcome/0,
     help/0,
     hint/0,
-    dead/0,
+    dead/1,
     quit/0
 ]).
 
@@ -39,15 +39,15 @@ goto_xy({X, Y}) ->
 goto_xy(X, Y) ->
     io:format("\033[~w;~wH", [Y, X]).
 
-draw_screen({game, GameData} = _Game) ->
-    Maze = maps:get(maze, GameData),
-    Hero = maps:get(hero, GameData),
-    {hero, HeroData} = Hero,
+draw_screen({game, GameData} = Game) ->
+    draw_maze(maps:get(maze, GameData)),
+    draw_hero(maps:get(hero, GameData)),
+    draw_info(Game).
+
+draw_info({game, GameData} = _Game) ->
+    {hero, HeroData} = maps:get(hero, GameData),
     {stats, StatsData} = maps:get(stats, GameData),
     
-    draw_maze(Maze),
-    draw_hero(Hero),
-
     goto_xy(0, ?InfoRow),
     io:format("Turn: ~p Strength: ~p", [
         maps:get(turn, StatsData),
@@ -129,7 +129,8 @@ hint() ->
     io:format("Unknown command; press ? for help."),
     ok.
 
-dead() ->
+dead(Game) ->
+    draw_info(Game),
     clear_message(),
     io:format("You've used up all of your strength and died; game over.~n"),
     rip.
