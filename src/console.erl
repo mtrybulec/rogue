@@ -127,7 +127,12 @@ help() ->
     io:format("j - go West~n"),
     io:format("l - go East~n"),
     io:format("q - quit~n"),
-    io:format("~n"),
+    case util:is_shell() of
+        true ->
+            io:get_chars("", 1);
+        false ->
+            io:format("~n")
+    end,
     io:get_chars("Press any key to continue...", 1),
     clear_screen().
     
@@ -139,7 +144,7 @@ hint() ->
 dead(Game) ->
     draw_info(Game),
     clear_message(),
-    io:format("You used up all of your strength and died of exhaustion; game over.~n"),
+    io:format("You died of exhaustion; game over.~n"),
     rip.
 
 quit() ->
