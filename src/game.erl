@@ -4,6 +4,8 @@
     play/0
 ]).
 
+-include("maze.hrl").
+
 play() ->
     console:start(),
     
@@ -25,6 +27,7 @@ play(Maze, Hero) ->
                 true ->
                     {hero, Data} = Hero,
                     {X, Y} = maps:get(position, Data),
+                    Strength = maps:get(strength, Data),
 
                     {NewX, NewY} = case Go of
                         <<"i">> ->
@@ -36,13 +39,24 @@ play(Maze, Hero) ->
                         <<"l">> ->
                             {X + 1, Y}
                     end,
-
-                    case maze:is_empty(Maze, NewX, NewY) of
+    
+                    NewPosition = case maze:is_empty(Maze, NewX, NewY) of
                         true ->
-                            play(Maze, {hero, Data#{position => {NewX, NewY}}});
+                            {NewX, NewY};
                         _ ->
-                            play(Maze, Hero)
-                    end;
+                            {X, Y}
+                    end,
+    
+                    NewStrength = case rand:uniform(?ReciprocalStrengthLossOnMove) of
+                        1 ->
+                            Strength - 1;
+                        _ ->
+                            Strength
+                    end,
+
+                    play(Maze, {hero, Data#{
+                        position => NewPosition,
+                        strength => NewStrength}});
                 false ->
                     play(Maze, Hero)
             end

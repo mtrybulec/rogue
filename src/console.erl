@@ -7,6 +7,7 @@
     start/0,
     
     clear_screen/0,
+    clear_eol/0,
     goto_xy/1,
     goto_xy/2,
 
@@ -24,15 +25,22 @@ start() ->
 clear_screen() ->
     io:format("\033[2J").
 
+clear_eol() ->
+    io:format("\033[K").
+
 goto_xy({X, Y}) ->
     io:format("\033[~w;~wH", [Y, X]).
 
 goto_xy(X, Y) ->
     io:format("\033[~w;~wH", [Y, X]).
 
-draw_screen(Maze, Hero) ->
+draw_screen(Maze, {hero, Data} = Hero) ->
     draw_maze(Maze),
-    draw_hero(Hero).
+    draw_hero(Hero),
+
+    goto_xy(0, ?InfoRow),
+    io:format("Strength: ~p", [maps:get(strength, Data)]),
+    clear_eol().
 
 draw_maze([{room, {_X, _Y, _Width, _Height}} = Room | T]) ->
     draw_room(Room),
@@ -62,10 +70,10 @@ draw_hero({hero, Data} = _Hero) ->
     io:format("@").
 
 get_command() ->
-    goto_xy(0, ?ScreenHeight),
+    goto_xy(0, ?CommandRow),
     io:get_chars("Command: ", 1).
 
 quit() ->
-    goto_xy(0, ?ScreenHeight + 1),
+    goto_xy(0, ?MessageRow),
     io:format("Quitting...~n"),
     ok.

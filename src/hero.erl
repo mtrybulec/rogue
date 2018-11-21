@@ -13,7 +13,8 @@ initialize_hero(Maze) ->
     case maze:is_empty(Maze, X, Y) of
          true ->
              {hero, #{
-                 position => {X, Y}
+                 position => {X, Y},
+                 strength => ?InitialStrength
              }};
          false ->
              initialize_hero(Maze)
