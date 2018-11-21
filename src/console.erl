@@ -7,7 +7,8 @@
     clear_screen/0,
     goto_xy/2,
 
-    draw_screen/2
+    draw_screen/2,
+    get_command/0
 ]).
 
 -include("maze.hrl").
@@ -22,10 +23,7 @@ draw_screen(Maze, Hero) ->
     clear_screen(),
     
     draw_maze(Maze),
-    draw_hero(Hero),
-    
-    goto_xy(0, ?ScreenHeight),
-    io:format("").
+    draw_hero(Hero).
 
 draw_maze([{room, [_PosX, _PosY, _Width, _Height]} = Room | T]) ->
     draw_room(Room),
@@ -53,3 +51,8 @@ draw_room_walls(_PosX, _PosY, _Width, _Height) ->
 draw_hero({hero, [X, Y]} = _Hero) ->
     goto_xy(X, Y),
     io:format("@").
+
+get_command() ->
+    goto_xy(0, ?ScreenHeight),
+    {ok, [Command]} = io:fread("Command: ", "~s"),
+    Command.
