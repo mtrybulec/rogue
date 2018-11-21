@@ -15,6 +15,7 @@
     get_command/0,
     
     clear_message/0,
+    welcome/0,
     hint/0,
     dead/0,
     quit/0
@@ -91,17 +92,22 @@ clear_message() ->
     clear_eol(),
     ok.
 
+welcome() ->
+    clear_message(),
+    io:format("Welcome to ~s, good luck! Press ? for help.", [?Name]),
+    ok.
+
 hint() ->
-    goto_xy(0, ?MessageRow),
+    clear_message(),
     io:format("Unknown command; press ? for help."),
     ok.
 
 dead() ->
-    goto_xy(0, ?MessageRow),
+    clear_message(),
     io:format("You've used up all of your strength and died; game over.~n"),
     rip.
 
 quit() ->
-    goto_xy(0, ?MessageRow),
+    clear_message(),
     io:format("Quitting...~n"),
     quit.

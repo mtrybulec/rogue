@@ -1,3 +1,5 @@
+-define(Name, <<"Rogue">>).
+
 -define(ScreenWidth, 180).
 -define(ScreenHeight, 60).
 -define(MaxWidth, 30).

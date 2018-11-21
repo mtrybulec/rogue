@@ -20,6 +20,7 @@ play() ->
     }},
     
     console:clear_screen(),
+    console:welcome(),
     play(Game).
 
 play({game, GameData} = Game) ->
