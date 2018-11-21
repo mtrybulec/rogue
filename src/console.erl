@@ -14,6 +14,8 @@
     draw_screen/1,
     get_command/0,
     
+    clear_message/0,
+    hint/0,
     dead/0,
     quit/0
 ]).
@@ -79,8 +81,20 @@ draw_hero({hero, Data} = _Hero) ->
 
 get_command() ->
     goto_xy(0, ?CommandRow),
+    %% clear_eol/0 is needed when running from the Erlang shell,
+    %% after the user inputs several characters before pressing Enter:
     clear_eol(),
     io:get_chars("Command: ", 1).
+
+clear_message() ->
+    goto_xy(0, ?MessageRow),
+    clear_eol(),
+    ok.
+
+hint() ->
+    goto_xy(0, ?MessageRow),
+    io:format("Unknown command; press ? for help."),
+    ok.
 
 dead() ->
     goto_xy(0, ?MessageRow),

@@ -27,11 +27,18 @@ play({game, GameData} = Game) ->
     Command = console:get_command(),
 
     case Command of
+        <<"\n">> ->
+            %% Need to handle this binary when running from the Erlang shell,
+            %% where the command needs to be followed by an Enter.
+            play(Game);
         <<"q">> ->
+            console:clear_message(),
             console:quit();
         Go ->
             case lists:member(Go, [<<"i">>, <<"k">>, <<"j">>, <<"l">>]) of
                 true ->
+                    console:clear_message(),
+
                     Maze = maps:get(maze, GameData),
                     
                     {hero, HeroData} = maps:get(hero, GameData),
@@ -80,6 +87,7 @@ play({game, GameData} = Game) ->
                             }})
                     end;
                 false ->
+                    console:hint(),
                     play(Game)
             end
     end.
