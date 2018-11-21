@@ -2,7 +2,9 @@
 
 -export([
     generate_maze/0,
-    draw_maze/1
+    draw_maze/1,
+    
+    is_empty/3
 ]).
 
 -include("maze.hrl").
@@ -21,7 +23,14 @@ generate_room() ->
 
 draw_maze(Maze) ->
     console:clear_screen(),
-    draw_rooms(Maze).
+    draw_rooms(Maze),
+    
+    {hero, [X, Y]} = hero:initialize_hero(Maze),
+    console:goto_xy(X, Y),
+    io:format("@"),
+    
+    console:goto_xy(0, ?ScreenHeight),
+    io:format("").
 
 draw_rooms([{room, [_PosX, _PosY, _Width, _Height]} = Room | T]) ->
     draw_room(Room),
@@ -36,10 +45,7 @@ draw_room({room, [PosX, PosY, Width, Height]}) ->
     draw_room_walls(PosX, PosY + 1, Width, Height - 1),
     
     console:goto_xy(PosX, PosY + Height - 1),
-    io:format("+~s+", [lists:duplicate(Width - 2, "-")]),
-    
-    console:goto_xy(0, ?ScreenHeight),
-    io:format("").
+    io:format("+~s+", [lists:duplicate(Width - 2, "-")]).
 
 draw_room_walls(PosX, PosY, Width, Height) when Height > 1 ->
     console:goto_xy(PosX, PosY),
@@ -48,3 +54,11 @@ draw_room_walls(PosX, PosY, Width, Height) when Height > 1 ->
     draw_room_walls(PosX, PosY + 1, Width, Height - 1);
 draw_room_walls(_PosX, _PosY, _Width, _Height) ->
     ok.
+
+is_empty([{room, [PosX, PosY, Width, Height]} | _T], X, Y) when
+    PosX < X, PosY < Y, PosX + Width > X + 1, PosY + Height > Y + 1 ->
+    true;
+is_empty([_H | T], X, Y) ->
+    is_empty(T, X, Y);
+is_empty([], _X, _Y) ->
+    false.
