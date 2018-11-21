@@ -11,7 +11,7 @@
     goto_xy/1,
     goto_xy/2,
 
-    draw_screen/2,
+    draw_screen/1,
     get_command/0,
     
     quit/0
@@ -34,12 +34,19 @@ goto_xy({X, Y}) ->
 goto_xy(X, Y) ->
     io:format("\033[~w;~wH", [Y, X]).
 
-draw_screen(Maze, {hero, Data} = Hero) ->
+draw_screen({game, GameData} = _Game) ->
+    Maze = maps:get(maze, GameData),
+    Hero = maps:get(hero, GameData),
+    {hero, HeroData} = Hero,
+    {stats, StatsData} = maps:get(stats, GameData),
+    
     draw_maze(Maze),
     draw_hero(Hero),
 
     goto_xy(0, ?InfoRow),
-    io:format("Strength: ~p", [maps:get(strength, Data)]),
+    io:format("Turn: ~p Strength: ~p", [
+        maps:get(turn, StatsData),
+        maps:get(strength, HeroData)]),
     clear_eol().
 
 draw_maze([{room, {_X, _Y, _Width, _Height}} = Room | T]) ->

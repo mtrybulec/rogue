@@ -11,12 +11,19 @@ play() ->
     
     Maze = maze:generate_maze(),
     Hero = hero:initialize_hero(Maze),
+    Game = {game, #{
+        maze => Maze,
+        hero => Hero,
+        stats => {stats, #{
+            turn => 1
+        }}
+    }},
     
     console:clear_screen(),
-    play(Maze, Hero).
+    play(Game).
 
-play(Maze, Hero) ->
-    console:draw_screen(Maze, Hero),
+play({game, GameData} = Game) ->
+    console:draw_screen(Game),
     Command = console:get_command(),
 
     case Command of
@@ -25,10 +32,14 @@ play(Maze, Hero) ->
         Go ->
             case lists:member(Go, [<<"i">>, <<"k">>, <<"j">>, <<"l">>]) of
                 true ->
-                    {hero, Data} = Hero,
-                    {X, Y} = maps:get(position, Data),
-                    Strength = maps:get(strength, Data),
-
+                    Maze = maps:get(maze, GameData),
+                    
+                    {hero, HeroData} = maps:get(hero, GameData),
+                    {X, Y} = maps:get(position, HeroData),
+                    Strength = maps:get(strength, HeroData),
+    
+                    {stats, StatsData} = maps:get(stats, GameData),
+    
                     {NewX, NewY} = case Go of
                         <<"i">> ->
                             {X, Y - 1};
@@ -54,10 +65,16 @@ play(Maze, Hero) ->
                             Strength
                     end,
 
-                    play(Maze, {hero, Data#{
-                        position => NewPosition,
-                        strength => NewStrength}});
+                    play({game, GameData#{
+                        hero => {hero, HeroData#{
+                            position => NewPosition,
+                            strength => NewStrength
+                        }},
+                        stats => {stats, StatsData#{
+                            turn => maps:get(turn, StatsData) + 1
+                        }}
+                    }});
                 false ->
-                    play(Maze, Hero)
+                    play(Game)
             end
     end.
