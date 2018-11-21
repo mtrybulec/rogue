@@ -1,0 +1,6 @@
+-define(ScreenWidth, 180).
+-define(ScreenHeight, 60).
+-define(MaxWidth, 30).
+-define(MinWidth, 3).
+-define(MaxHeight, 10).
+-define(MinHeight, 3).
