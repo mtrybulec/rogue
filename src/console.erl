@@ -139,7 +139,7 @@ hint() ->
 dead(Game) ->
     draw_info(Game),
     clear_message(),
-    io:format("You used up all of your strength and died; game over.~n"),
+    io:format("You used up all of your strength and died of exhaustion; game over.~n"),
     rip.
 
 quit() ->
