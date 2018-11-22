@@ -67,18 +67,21 @@ draw_maze([{corridor, _} = Corridor | T]) ->
 draw_maze([]) ->
     ok.
 
-draw_room({room, {X, Y, Width, Height}}) ->
-    goto_xy(X, Y),
-    io:format("+~s+", [lists:duplicate(Width - 2, "-")]),
+draw_room({room, {{X1, Y1}, {X2, Y2}}}) ->
+    InteriorWidth = X2 - X1 - 1,
+    InteriorHeight = Y2 - Y1 - 1,
     
-    draw_room_walls(X, Y + 1, Width, Height - 1),
+    goto_xy(X1, Y1),
+    io:format("+~s+", [lists:duplicate(InteriorWidth, "-")]),
     
-    goto_xy(X, Y + Height - 1),
-    io:format("+~s+", [lists:duplicate(Width - 2, "-")]).
+    draw_room_walls(X1, Y1 + 1, InteriorWidth, InteriorHeight),
+    
+    goto_xy(X1, Y2),
+    io:format("+~s+", [lists:duplicate(InteriorWidth, "-")]).
 
-draw_room_walls(X, Y, Width, Height) when Height > 1 ->
+draw_room_walls(X, Y, Width, Height) when Height > 0 ->
     goto_xy(X, Y),
-    io:format("|~s|", [lists:duplicate(Width - 2, ".")]),
+    io:format("|~s|", [lists:duplicate(Width, ".")]),
     
     draw_room_walls(X, Y + 1, Width, Height - 1);
 draw_room_walls(_X, _Y, _Width, _Height) ->

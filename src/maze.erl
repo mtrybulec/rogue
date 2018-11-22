@@ -23,7 +23,7 @@ generate_room() ->
     X = rand:uniform(?ScreenWidth - Width),
     Y = rand:uniform(?ScreenHeight - Height),
 
-    {room, {X, Y, Width, Height}}.
+    {room, {{X, Y}, {X + Width - 1, Y + Height - 1}}}.
 
 generate_door(Maze) ->
     X = rand:uniform(?ScreenWidth),
@@ -69,8 +69,8 @@ generate_corridor(Maze, X, Y, SegmentCount) ->
     end,
     Segment ++ generate_corridor(Maze, EndX, EndY, SegmentCount - 1).
 
-is_empty([{room, {X, Y, Width, Height}} | _T], PosX, PosY) when
-    X < PosX, Y < PosY, X + Width > PosX + 1, Y + Height > PosY + 1 ->
+is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
+    X1 < PosX, Y1 < PosY, X2 > PosX, Y2 > PosY ->
     true;
 is_empty([{door, {X, Y}} | _T], PosX, PosY) when
     X == PosX, Y == PosY ->
@@ -78,25 +78,25 @@ is_empty([{door, {X, Y}} | _T], PosX, PosY) when
 is_empty([{corridor, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
     X1 =< PosX, Y1 =< PosY, X2 >= PosX, Y2 >= PosY ->
     true;
-is_empty([H | T], PosX, PosY) ->
+is_empty([_H | T], PosX, PosY) ->
     is_empty(T, PosX, PosY);
 is_empty([], _PosX, _PosY) ->
     false.
 
-is_wall([{room, {X, Y, Width, Height}} | _T] = Maze, PosX, PosY) when
-    X == PosX orelse X + Width == PosX + 1, Y =< PosY, Y + Height >= PosY + 1;
-    Y == PosY orelse Y + Height == PosY + 1, X =< PosX, X + Width >= PosX + 1 ->
+is_wall([{room, {{X1, Y1}, {X2, Y2}}} | _T] = Maze, PosX, PosY) when
+    X1 == PosX orelse X2 == PosX, Y1 =< PosY, Y2 >= PosY;
+    Y1 == PosY orelse Y2 == PosY, X1 =< PosX, X2 >= PosX ->
     not is_empty(Maze, PosX, PosY);
 is_wall([_H | T], PosX, PosY) ->
     is_wall(T, PosX, PosY);
 is_wall([], _PosX, _PosY) ->
     false.
 
-is_corner([{room, {X, Y, Width, Height}} | _T], PosX, PosY) when
-    X == PosX, Y == PosY;
-    X + Width == PosX + 1, Y == PosY;
-    X == PosX, Y + Height == PosY + 1;
-    X + Width == PosX + 1, Y + Height == PosY + 1 ->
+is_corner([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
+    X1 == PosX, Y1 == PosY;
+    X2 == PosX, Y1 == PosY;
+    X1 == PosX, Y2 == PosY;
+    X2 == PosX, Y2 == PosY ->
     true;
 is_corner([_H | T], PosX, PosY) ->
     is_corner(T, PosX, PosY);
@@ -104,7 +104,7 @@ is_corner([], _PosX, _PosY) ->
     false.
 
 is_edge(X, Y) when
-    X == 1; Y == 1; X == ?ScreenWidth; Y == ?ScreenHeight ->
+    X =< 1; Y =< 1; X >= ?ScreenWidth; Y >= ?ScreenHeight ->
     true;
 is_edge(_X, _Y) ->
     false.
