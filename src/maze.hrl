@@ -4,7 +4,7 @@
 -define(ScreenWidth, 180).
 -define(ScreenHeight, 60).
 
--define(InfoRow, ?ScreenHeight).
+-define(InfoRow, ?ScreenHeight + 1).
 -define(CommandRow, ?InfoRow + 1).
 -define(MessageRow, ?CommandRow + 1).
 

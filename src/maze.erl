@@ -46,7 +46,13 @@ generate_door(Maze) ->
                 true ->
                     generate_door(Maze);
                 false ->
-                    generate_corridor(Maze, NewX, NewY, DeltaX, DeltaY) ++ [{door, {X, Y}}]
+                    Corridor = generate_corridor(Maze, NewX, NewY, DeltaX, DeltaY),
+                    case length(Corridor) of
+                        0 ->
+                            generate_door(Maze);
+                        _ ->
+                            Corridor ++ [{door, {X, Y}}]
+                    end
             end;
         false ->
             generate_door(Maze)
@@ -62,21 +68,28 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
     SegmentLength = rand:uniform(?MaxCorridorSegmentLength),
     EndX = X + SegmentLength * DeltaX,
     EndY = Y + SegmentLength * DeltaY,
-    %% Make sure the order of coordinates is from lower to higher
-    %% so that comparisons for testing inclusion are easier:
-    Segment = case DeltaX + DeltaY of
-        1 ->
-            [{corridor, {{X, Y}, {EndX, EndY}}}];
-        -1 ->
-            [{corridor, {{EndX, EndY}, {X, Y}}}]
-    end,
-    DeltaChange = case rand:uniform(2) of
-        1 ->
-            1;
-        2 ->
-            -1
-    end,
-    Segment ++ generate_corridor(Maze, EndX, EndY, DeltaY * DeltaChange, DeltaX * DeltaChange, SegmentCount - 1).
+    
+    case is_outside(EndX, EndY) of
+        true ->
+            generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount - 1);
+        false ->
+            %% Make sure the order of coordinates is from lower to higher
+            %% so that comparisons for testing inclusion are easier:
+            Segment = case DeltaX + DeltaY of
+                1 ->
+                    [{corridor, {{X, Y}, {EndX, EndY}}}];
+                -1 ->
+                    [{corridor, {{EndX, EndY}, {X, Y}}}]
+            end,
+    
+            DeltaChange = case rand:uniform(2) of
+                1 ->
+                    1;
+                2 ->
+                    -1
+            end,
+            Segment ++ generate_corridor(Maze, EndX, EndY, DeltaY * DeltaChange, DeltaX * DeltaChange, SegmentCount - 1)
+    end.
 
 is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
     X1 < PosX, Y1 < PosY, X2 > PosX, Y2 > PosY ->
@@ -121,7 +134,13 @@ is_door([], _PosX, _PosY) ->
     false.
 
 is_edge(X, Y) when
-    X =< 1; Y =< 1; X >= ?ScreenWidth; Y >= ?ScreenHeight ->
+    X == 1; Y == 1; X == ?ScreenWidth; Y == ?ScreenHeight ->
     true;
 is_edge(_X, _Y) ->
+    false.
+
+is_outside(X, Y) when
+    X < 1; Y < 1; X > ?ScreenWidth; Y > ?ScreenHeight ->
+    true;
+is_outside(_X, _Y) ->
     false.
