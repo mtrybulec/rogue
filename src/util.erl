@@ -5,5 +5,9 @@
 ]).
 
 is_shell() ->
-    CliArguments = init:get_arguments(),
-    not lists:member({noshell, []}, CliArguments).
+    case init:get_argument(noshell) of
+        {ok, _} ->
+            false;
+        error ->
+            true
+    end.
