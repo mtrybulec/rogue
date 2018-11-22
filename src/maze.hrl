@@ -18,3 +18,4 @@
 -define(MinRoomHeight, 3).
 -define(MaxCorridorSegmentCount, 10).
 -define(MaxCorridorSegmentLength, 10).
+-define(ReciprocalDeadEnd, 5).

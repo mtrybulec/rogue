@@ -17,9 +17,13 @@ generate_maze() ->
 generate_maze(Maze) ->
     generate_door(Maze) ++ Maze.
 
+generate_room_dimensions() -> {
+    ?MinRoomWidth + rand:uniform(?MaxRoomWidth - ?MinRoomWidth),
+    ?MinRoomHeight + rand:uniform(?MaxRoomHeight - ?MinRoomHeight)
+}.
+
 generate_room() ->
-    Width = ?MinRoomWidth + rand:uniform(?MaxRoomWidth - ?MinRoomWidth),
-    Height = ?MinRoomHeight + rand:uniform(?MaxRoomHeight - ?MinRoomHeight),
+    {Width, Height} = generate_room_dimensions(),
     
     X = rand:uniform(?ScreenWidth - Width),
     Y = rand:uniform(?ScreenHeight - Height),
@@ -62,8 +66,40 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY) ->
     SegmentCount = rand:uniform(?MaxCorridorSegmentCount),
     generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount).
 
-generate_corridor(_Maze, _X, _Y, _DeltaX, _DeltaY, 0) ->
-    [];
+generate_corridor(_Maze, X, Y, DeltaX, DeltaY, 0) ->
+    case rand:uniform(?ReciprocalDeadEnd) of
+        1 ->
+            [];
+        _ ->
+            DoorX = X + DeltaX,
+            DoorY = Y + DeltaY,
+    
+            {RoomWidth, RoomHeight} = generate_room_dimensions(),
+            RoomPosition = case DeltaX of
+                0 ->
+                    %% Careful not to put the door in the room's corner:
+                    RoomX1 = X - RoomWidth + 1 + rand:uniform(RoomWidth - 2),
+                    RoomX2 = RoomX1 + RoomWidth,
+                    case DeltaY of
+                        1 ->
+                            {{RoomX1, DoorY - RoomHeight}, {RoomX2, DoorY}};
+                        -1 ->
+                            {{RoomX1, DoorY}, {RoomX2, DoorY + RoomHeight}}
+                    end;
+                _ ->
+                    %% Careful not to put the door in the room's corner:
+                    RoomY1 = Y - RoomHeight + 1 + rand:uniform(RoomHeight - 2),
+                    RoomY2 = RoomY1 + RoomHeight,
+                    case DeltaX of
+                        1 ->
+                            {{DoorX, RoomY1}, {DoorX + RoomWidth, RoomY2}};
+                        -1 ->
+                            {{DoorX - RoomWidth, RoomY1}, {DoorX, RoomY2}}
+                    end
+            end,
+            
+            [{door, {DoorX, DoorY}}, {room, RoomPosition}]
+    end;
 generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
     SegmentLength = rand:uniform(?MaxCorridorSegmentLength),
     EndX = min(max(X + SegmentLength * DeltaX, 1), ?ScreenWidth),
