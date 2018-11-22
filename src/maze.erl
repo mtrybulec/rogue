@@ -17,8 +17,8 @@ generate_maze(Maze) ->
     generate_door(Maze) ++ Maze.
 
 generate_room() ->
-    Width = ?MinWidth + rand:uniform(?MaxWidth - ?MinWidth),
-    Height = ?MinHeight + rand:uniform(?MaxHeight - ?MinHeight),
+    Width = ?MinRoomWidth + rand:uniform(?MaxRoomWidth - ?MinRoomWidth),
+    Height = ?MinRoomHeight + rand:uniform(?MaxRoomHeight - ?MinRoomHeight),
     
     X = rand:uniform(?ScreenWidth - Width),
     Y = rand:uniform(?ScreenHeight - Height),

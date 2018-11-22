@@ -3,10 +3,6 @@
 
 -define(ScreenWidth, 180).
 -define(ScreenHeight, 60).
--define(MaxWidth, 30).
--define(MinWidth, 3).
--define(MaxHeight, 10).
--define(MinHeight, 3).
 
 -define(InfoRow, ?ScreenHeight).
 -define(CommandRow, ?InfoRow + 1).
@@ -16,5 +12,9 @@
 -define(ReciprocalStrengthLossOnMove, 10).
 -define(StrengthLossOnHittingWall, 1).
 
+-define(MaxRoomWidth, 30).
+-define(MinRoomWidth, 3).
+-define(MaxRoomHeight, 10).
+-define(MinRoomHeight, 3).
 -define(MaxCorridorSegmentCount, 10).
 -define(MaxCorridorSegmentLength, 10).
