@@ -33,6 +33,8 @@ play({game, GameData} = Game) ->
         <<"d">> ->
             console:debug(Game),
             play(Game);
+        <<"r">> ->
+            play();
         <<"?">> ->
             console:help(Game),
             play(Game);
