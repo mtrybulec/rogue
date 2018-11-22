@@ -66,30 +66,32 @@ generate_corridor(_Maze, _X, _Y, _DeltaX, _DeltaY, 0) ->
     [];
 generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
     SegmentLength = rand:uniform(?MaxCorridorSegmentLength),
-    EndX = X + SegmentLength * DeltaX,
-    EndY = Y + SegmentLength * DeltaY,
+    EndX = min(max(X + SegmentLength * DeltaX, 1), ?ScreenWidth),
+    EndY = min(max(Y + SegmentLength * DeltaY, 1), ?ScreenHeight),
     
-    case is_outside(EndX, EndY) of
+    Segment = case X == EndX andalso Y == EndY of
         true ->
-            generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount - 1);
+            %% Can't go in that direction;
+            %% try changing direction to a perpendicular one.
+            [];
         false ->
             %% Make sure the order of coordinates is from lower to higher
             %% so that comparisons for testing inclusion are easier:
-            Segment = case DeltaX + DeltaY of
+            case DeltaX + DeltaY of
                 1 ->
                     [{corridor, {{X, Y}, {EndX, EndY}}}];
                 -1 ->
                     [{corridor, {{EndX, EndY}, {X, Y}}}]
-            end,
+            end
+    end,
     
-            DeltaChange = case rand:uniform(2) of
-                1 ->
-                    1;
-                2 ->
-                    -1
-            end,
-            Segment ++ generate_corridor(Maze, EndX, EndY, DeltaY * DeltaChange, DeltaX * DeltaChange, SegmentCount - 1)
-    end.
+    DeltaChange = case rand:uniform(2) of
+        1 ->
+            1;
+        2 ->
+            -1
+    end,
+    Segment ++ generate_corridor(Maze, EndX, EndY, DeltaY * DeltaChange, DeltaX * DeltaChange, SegmentCount - 1).
 
 is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
     X1 < PosX, Y1 < PosY, X2 > PosX, Y2 > PosY ->
@@ -137,10 +139,4 @@ is_edge(X, Y) when
     X == 1; Y == 1; X == ?ScreenWidth; Y == ?ScreenHeight ->
     true;
 is_edge(_X, _Y) ->
-    false.
-
-is_outside(X, Y) when
-    X < 1; Y < 1; X > ?ScreenWidth; Y > ?ScreenHeight ->
-    true;
-is_outside(_X, _Y) ->
     false.
