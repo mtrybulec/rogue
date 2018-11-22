@@ -10,10 +10,11 @@
 
 generate_maze() ->
     FirstRoom = [generate_room()],
+    %% Make sure rooms on the list are before doors:
     lists:reverse(generate_maze(FirstRoom)).
 
 generate_maze(Maze) ->
-    [generate_door(Maze) | Maze].
+    generate_door(Maze) ++ Maze.
 
 generate_room() ->
     Width = ?MinWidth + rand:uniform(?MaxWidth - ?MinWidth),
@@ -33,11 +34,40 @@ generate_door(Maze) ->
         not is_corner(Maze, X, Y) andalso
         not is_edge(X, Y) of
         true ->
-            {door, {X, Y}};
+            generate_corridor(Maze, X, Y) ++ [{door, {X, Y}}];
         false ->
             generate_door(Maze)
     end.
     
+generate_corridor(Maze, X, Y) ->
+    SegmentCount = rand:uniform(?MaxCorridorSegmentCount),
+    generate_corridor(Maze, X, Y, SegmentCount).
+
+generate_corridor(_Maze, _X, _Y, 0) ->
+    [];
+generate_corridor(Maze, X, Y, SegmentCount) ->
+    {DeltaX, DeltaY} = case rand:uniform(4) of
+        1 ->
+            {-1, 0};
+        2 ->
+            {1, 0};
+        3 ->
+            {0, -1};
+        4 ->
+            {0, 1}
+    end,
+    SegmentLength = rand:uniform(?MaxCorridorSegmentLength),
+    EndX = X + SegmentLength * DeltaX,
+    EndY = Y + SegmentLength * DeltaY,
+    %% Make sure the order of coordinates is from lower to higher
+    %% so that comparisons for testing inclusion are easier:
+    Segment = case DeltaX + DeltaY of
+        1 ->
+            [{corridor, {{X, Y}, {EndX, EndY}}}];
+        -1 ->
+            [{corridor, {{EndX, EndY}, {X, Y}}}]
+    end,
+    Segment ++ generate_corridor(Maze, EndX, EndY, SegmentCount - 1).
 
 is_empty([{room, {X, Y, Width, Height}} | _T], PosX, PosY) when
     X < PosX, Y < PosY, X + Width > PosX + 1, Y + Height > PosY + 1 ->
@@ -45,7 +75,10 @@ is_empty([{room, {X, Y, Width, Height}} | _T], PosX, PosY) when
 is_empty([{door, {X, Y}} | _T], PosX, PosY) when
     X == PosX, Y == PosY ->
     true;
-is_empty([_H | T], PosX, PosY) ->
+is_empty([{corridor, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
+    X1 =< PosX, Y1 =< PosY, X2 >= PosX, Y2 >= PosY ->
+    true;
+is_empty([H | T], PosX, PosY) ->
     is_empty(T, PosX, PosY);
 is_empty([], _PosX, _PosY) ->
     false.

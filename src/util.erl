@@ -1,7 +1,8 @@
 -module(util).
 
 -export([
-   is_shell/0
+    is_shell/0,
+    sign/1
 ]).
 
 is_shell() ->
@@ -11,3 +12,10 @@ is_shell() ->
         error ->
             true
     end.
+
+sign(X) when X < 0 ->
+    -1;
+sign(X) when X > 0 ->
+    1;
+sign(_) ->
+    0.

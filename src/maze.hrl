@@ -12,6 +12,9 @@
 -define(CommandRow, ?InfoRow + 1).
 -define(MessageRow, ?CommandRow + 1).
 
--define(InitialStrength, 10).
+-define(InitialStrength, 100).
 -define(ReciprocalStrengthLossOnMove, 10).
 -define(StrengthLossOnHittingWall, 1).
+
+-define(MaxCorridorSegmentCount, 10).
+-define(MaxCorridorSegmentLength, 10).

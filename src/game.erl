@@ -29,6 +29,9 @@ play({game, GameData} = Game) ->
     console:clear_message(),
 
     case Command of
+        <<"d">> ->
+            console:debug(Game),
+            play(Game);
         <<"?">> ->
             console:help(),
             play(Game);

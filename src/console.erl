@@ -19,7 +19,8 @@
     help/0,
     hint/0,
     dead/1,
-    quit/0
+    quit/0,
+    debug/1
 ]).
 
 -include("maze.hrl").
@@ -54,11 +55,14 @@ draw_info({game, GameData} = _Game) ->
         maps:get(strength, HeroData)]),
     clear_eol().
 
-draw_maze([{room, {_X, _Y, _Width, _Height}} = Room | T]) ->
+draw_maze([{room, _} = Room | T]) ->
     draw_room(Room),
     draw_maze(T);
-draw_maze([{door, {_X, _Y}} = Door | T]) ->
+draw_maze([{door, _} = Door | T]) ->
     draw_door(Door),
+    draw_maze(T);
+draw_maze([{corridor, _} = Corridor | T]) ->
+    draw_corridor(Corridor),
     draw_maze(T);
 draw_maze([]) ->
     ok.
@@ -83,6 +87,18 @@ draw_room_walls(_X, _Y, _Width, _Height) ->
 draw_door({door, {X, Y}}) ->
     goto_xy(X, Y),
     io:format("#").
+
+draw_corridor({corridor, {{X, Y}, {X, Y}}}) ->
+    goto_xy(X, Y),
+    io:format(".");
+draw_corridor({corridor, {{X1, Y1}, {X2, Y2}}}) ->
+    goto_xy(X1, Y1),
+    io:format("."),
+
+    DeltaX = util:sign(X2 - X1),
+    DeltaY = util:sign(Y2 - Y1),
+    
+    draw_corridor({corridor, {{X1 + DeltaX, Y1 + DeltaY}, {X2, Y2}}}).
 
 draw_hero({hero, Data} = _Hero) ->
     goto_xy(maps:get(position, Data)),
@@ -127,15 +143,10 @@ help() ->
     io:format("j - go West~n"),
     io:format("l - go East~n"),
     io:format("q - quit~n"),
-    case util:is_shell() of
-        true ->
-            io:get_chars("", 1);
-        false ->
-            io:format("~n")
-    end,
+    flush_io(),
     io:get_chars("Press any key to continue...", 1),
     clear_screen().
-    
+
 hint() ->
     clear_message(),
     io:format("Unknown command; press ? for help."),
@@ -151,3 +162,19 @@ quit() ->
     clear_message(),
     io:format("Quitting...~n"),
     quit.
+
+debug(Game) ->
+    clear_screen(),
+    goto_xy(0, 0),
+    io:format("~p~n", [Game]),
+    flush_io(),
+    io:get_chars("Press any key to continue...", 1),
+    clear_screen().
+
+flush_io() ->
+    case util:is_shell() of
+        true ->
+            io:get_chars("", 1);
+        false ->
+            io:format("~n")
+    end.
