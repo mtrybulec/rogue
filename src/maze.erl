@@ -3,7 +3,8 @@
 -export([
     generate_maze/0,
     is_empty/3,
-    is_wall/3
+    is_wall/3,
+    is_door/3
 ]).
 
 -include("maze.hrl").
@@ -101,6 +102,14 @@ is_corner([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
 is_corner([_H | T], PosX, PosY) ->
     is_corner(T, PosX, PosY);
 is_corner([], _PosX, _PosY) ->
+    false.
+
+is_door([{door, {X, Y}} | _T], PosX, PosY) when
+    X == PosX, Y == PosY ->
+    true;
+is_door([_H | T], PosX, PosY) ->
+    is_door(T, PosX, PosY);
+is_door([], _PosX, _PosY) ->
     false.
 
 is_edge(X, Y) when

@@ -12,11 +12,13 @@
     goto_xy/2,
 
     draw_screen/1,
+    draw_info/1,
+    move/3,
     get_command/0,
     
     clear_message/0,
     welcome/0,
-    help/0,
+    help/1,
     hint/0,
     dead/1,
     quit/0,
@@ -107,6 +109,19 @@ draw_hero({hero, Data} = _Hero) ->
     goto_xy(maps:get(position, Data)),
     io:format("@").
 
+move(_Maze, {X, Y}, {X, Y}) ->
+    ok;
+move(Maze, {OldX, OldY}, {NewX, NewY}) ->
+    goto_xy(OldX, OldY),
+    case maze:is_door(Maze, OldX, OldY) of
+        true ->
+            io:format("#");
+        false ->
+            io:format(".")
+    end,
+    goto_xy(NewX, NewY),
+    io:format("@").
+
 get_command() ->
     goto_xy(0, ?CommandRow),
     %% clear_eol/0 is needed when running from the Erlang shell,
@@ -132,7 +147,7 @@ welcome() ->
     io:format("Welcome to ~s, good luck! Press ? for help.", [?Name]),
     ok.
 
-help() ->
+help(Game) ->
     clear_screen(),
     goto_xy(0, 0),
     io:format("~s help~n", [?Name]),
@@ -148,7 +163,8 @@ help() ->
     io:format("q - quit~n"),
     flush_io(),
     io:get_chars("Press any key to continue...", 1),
-    clear_screen().
+    clear_screen(),
+    draw_screen(Game).
 
 hint() ->
     clear_message(),
@@ -172,7 +188,8 @@ debug(Game) ->
     io:format("~p~n", [Game]),
     flush_io(),
     io:get_chars("Press any key to continue...", 1),
-    clear_screen().
+    clear_screen(),
+    draw_screen(Game).
 
 flush_io() ->
     case util:is_shell() of

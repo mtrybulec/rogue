@@ -21,10 +21,11 @@ play() ->
     
     console:clear_screen(),
     console:welcome(),
+    console:draw_screen(Game),
     play(Game).
 
 play({game, GameData} = Game) ->
-    console:draw_screen(Game),
+    console:draw_info(Game),
     Command = console:get_command(),
     console:clear_message(),
 
@@ -33,7 +34,7 @@ play({game, GameData} = Game) ->
             console:debug(Game),
             play(Game);
         <<"?">> ->
-            console:help(),
+            console:help(Game),
             play(Game);
         <<"q">> ->
             console:quit();
@@ -94,6 +95,7 @@ play({game, GameData} = Game) ->
                         0 ->
                             console:dead(NewGame);
                         _ ->
+                            console:move(Maze, {X, Y}, NewPosition),
                             play(NewGame)
                     end;
                 false ->
