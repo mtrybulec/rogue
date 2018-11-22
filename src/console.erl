@@ -27,6 +27,13 @@
 
 -include("maze.hrl").
 
+-define(EmptyChar, ".").
+-define(HorizWallChar, "-").
+-define(VertWallChar, "|").
+-define(CornerChar, "+").
+-define(DoorChar, "#").
+-define(HeroChar, "@").
+
 start() ->
     io:setopts([{binary, true}]).
 
@@ -73,17 +80,23 @@ draw_room({room, {{X1, Y1}, {X2, Y2}}}) ->
     InteriorWidth = X2 - X1 - 1,
     InteriorHeight = Y2 - Y1 - 1,
     
-    goto_xy(X1, Y1),
-    io:format("+~s+", [lists:duplicate(InteriorWidth, "-")]),
-    
+    draw_room_walls(X1, Y1, InteriorWidth),
     draw_room_walls(X1, Y1 + 1, InteriorWidth, InteriorHeight),
-    
-    goto_xy(X1, Y2),
-    io:format("+~s+", [lists:duplicate(InteriorWidth, "-")]).
+    draw_room_walls(X1, Y2, InteriorWidth).
 
+draw_room_walls(X, Y, InteriorWidth) ->
+    goto_xy(X, Y),
+    io:format("~s~s~s", [
+        ?CornerChar,
+        lists:duplicate(InteriorWidth, ?HorizWallChar),
+        ?CornerChar]).
+    
 draw_room_walls(X, Y, Width, Height) when Height > 0 ->
     goto_xy(X, Y),
-    io:format("|~s|", [lists:duplicate(Width, ".")]),
+    io:format("~s~s~s", [
+        ?VertWallChar,
+        lists:duplicate(Width, ?EmptyChar),
+        ?VertWallChar]),
     
     draw_room_walls(X, Y + 1, Width, Height - 1);
 draw_room_walls(_X, _Y, _Width, _Height) ->
@@ -91,14 +104,14 @@ draw_room_walls(_X, _Y, _Width, _Height) ->
 
 draw_door({door, {X, Y}}) ->
     goto_xy(X, Y),
-    io:format("#").
+    io:format(?DoorChar).
 
 draw_corridor({corridor, {{X, Y}, {X, Y}}}) ->
     goto_xy(X, Y),
-    io:format(".");
+    io:format(?EmptyChar);
 draw_corridor({corridor, {{X1, Y1}, {X2, Y2}}}) ->
     goto_xy(X1, Y1),
-    io:format("."),
+    io:format(?EmptyChar),
 
     DeltaX = util:sign(X2 - X1),
     DeltaY = util:sign(Y2 - Y1),
@@ -107,7 +120,7 @@ draw_corridor({corridor, {{X1, Y1}, {X2, Y2}}}) ->
 
 draw_hero({hero, Data} = _Hero) ->
     goto_xy(maps:get(position, Data)),
-    io:format("@").
+    io:format(?HeroChar).
 
 move(_Maze, {X, Y}, {X, Y}) ->
     ok;
@@ -115,12 +128,12 @@ move(Maze, {OldX, OldY}, {NewX, NewY}) ->
     goto_xy(OldX, OldY),
     case maze:is_door(Maze, OldX, OldY) of
         true ->
-            io:format("#");
+            io:format(?DoorChar);
         false ->
-            io:format(".")
+            io:format(?EmptyChar)
     end,
     goto_xy(NewX, NewY),
-    io:format("@").
+    io:format(?HeroChar).
 
 get_command() ->
     goto_xy(0, ?CommandRow),
