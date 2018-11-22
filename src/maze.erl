@@ -35,35 +35,30 @@ generate_door(Maze) ->
         not is_corner(Maze, X, Y) andalso
         not is_edge(X, Y) of
         true ->
-            generate_corridor(Maze, X, Y) ++ [{door, {X, Y}}];
+            IsVert = rand:uniform(2) == 1,
+            {DeltaX, DeltaY} = util:generate_delta(IsVert),
+            {NewX, NewY} = {X + DeltaX, Y + DeltaY},
+            
+            case is_wall(Maze, NewX, NewY) orelse
+                is_door(Maze, NewX, NewY) orelse
+                is_corner(Maze, NewX, NewY) orelse
+                is_empty(Maze, NewX, NewY) of
+                true ->
+                    generate_door(Maze);
+                false ->
+                    generate_corridor(Maze, NewX, NewY, DeltaX, DeltaY) ++ [{door, {X, Y}}]
+            end;
         false ->
             generate_door(Maze)
     end.
     
-generate_corridor(Maze, X, Y) ->
+generate_corridor(Maze, X, Y, DeltaX, DeltaY) ->
     SegmentCount = rand:uniform(?MaxCorridorSegmentCount),
-    StartVert = rand:uniform(2) == 1,
-    generate_corridor(Maze, X, Y, StartVert, SegmentCount).
+    generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount).
 
-generate_corridor(_Maze, _X, _Y, _IsVert, 0) ->
+generate_corridor(_Maze, _X, _Y, _DeltaX, _DeltaY, 0) ->
     [];
-generate_corridor(Maze, X, Y, IsVert, SegmentCount) ->
-    {DeltaX, DeltaY} = case IsVert of
-        true ->
-            case rand:uniform(2) of
-                1 ->
-                    {0, -1};
-                2 ->
-                    {0, 1}
-            end;
-        false ->
-            case rand:uniform(2) of
-                1 ->
-                    {-1, 0};
-                2 ->
-                    {1, 0}
-            end
-    end,
+generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
     SegmentLength = rand:uniform(?MaxCorridorSegmentLength),
     EndX = X + SegmentLength * DeltaX,
     EndY = Y + SegmentLength * DeltaY,
@@ -75,7 +70,13 @@ generate_corridor(Maze, X, Y, IsVert, SegmentCount) ->
         -1 ->
             [{corridor, {{EndX, EndY}, {X, Y}}}]
     end,
-    Segment ++ generate_corridor(Maze, EndX, EndY, not IsVert, SegmentCount - 1).
+    DeltaChange = case rand:uniform(2) of
+        1 ->
+            1;
+        2 ->
+            -1
+    end,
+    Segment ++ generate_corridor(Maze, EndX, EndY, DeltaY * DeltaChange, DeltaX * DeltaChange, SegmentCount - 1).
 
 is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
     X1 < PosX, Y1 < PosY, X2 > PosX, Y2 > PosY ->
