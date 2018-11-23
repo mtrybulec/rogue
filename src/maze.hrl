@@ -12,6 +12,7 @@
 -define(ReciprocalStrengthLossOnMove, 10).
 -define(StrengthLossOnHittingWall, 1).
 
+-define(MazeComplexity, 10).
 -define(MaxRoomWidth, 30).
 -define(MinRoomWidth, 3).
 -define(MaxRoomHeight, 10).

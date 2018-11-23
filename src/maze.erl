@@ -11,10 +11,12 @@
 
 generate_maze() ->
     FirstRoom = [generate_room()],
-    generate_maze(FirstRoom).
+    generate_maze(FirstRoom, ?MazeComplexity).
 
-generate_maze(Maze) ->
-    generate_door(Maze) ++ Maze.
+generate_maze(Maze, 0) ->
+    Maze;
+generate_maze(Maze, Trials) ->
+    generate_maze(generate_door(Maze) ++ Maze, Trials - 1).
 
 generate_room_dimensions() -> {
     ?MinRoomWidth + rand:uniform(?MaxRoomWidth - ?MinRoomWidth),
