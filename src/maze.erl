@@ -11,8 +11,7 @@
 
 generate_maze() ->
     FirstRoom = [generate_room()],
-    %% Make sure rooms on the list are before doors:
-    lists:reverse(generate_maze(FirstRoom)).
+    generate_maze(FirstRoom).
 
 generate_maze(Maze) ->
     generate_door(Maze) ++ Maze.
@@ -112,7 +111,7 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
             [];
         false ->
             %% Make sure the order of coordinates is from lower to higher
-            %% so that comparisons for testing inclusion are easier:
+            %% so that comparisons for inclusion testing are easier:
             case DeltaX + DeltaY of
                 1 ->
                     [{corridor, {{X, Y}, {EndX, EndY}}}];

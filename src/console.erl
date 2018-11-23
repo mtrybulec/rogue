@@ -59,16 +59,16 @@ draw_info({game, GameData} = _Game) ->
         maps:get(strength, HeroData)]),
     clear_eol().
 
-draw_maze([{room, _} = Room | T]) ->
+draw_maze(Maze) ->
+    draw_rooms(Maze),
+    draw_passages(Maze).
+
+draw_rooms([{room, _} = Room | T]) ->
     draw_room(Room),
-    draw_maze(T);
-draw_maze([{door, _} = Door | T]) ->
-    draw_door(Door),
-    draw_maze(T);
-draw_maze([{corridor, _} = Corridor | T]) ->
-    draw_corridor(Corridor),
-    draw_maze(T);
-draw_maze([]) ->
+    draw_rooms(T);
+draw_rooms([_ | T]) ->
+    draw_rooms(T);
+draw_rooms([]) ->
     ok.
 
 draw_room({room, {{X1, Y1}, {X2, Y2}}}) ->
@@ -95,6 +95,17 @@ draw_room_walls(X, Y, Width, Height) when Height > 0 ->
     
     draw_room_walls(X, Y + 1, Width, Height - 1);
 draw_room_walls(_X, _Y, _Width, _Height) ->
+    ok.
+
+draw_passages([{door, _} = Door | T]) ->
+    draw_door(Door),
+    draw_passages(T);
+draw_passages([{corridor, _} = Corridor | T]) ->
+    draw_corridor(Corridor),
+    draw_passages(T);
+draw_passages([_ | T]) ->
+    draw_passages(T);
+draw_passages([]) ->
     ok.
 
 draw_door({door, {X, Y}}) ->
@@ -138,7 +149,7 @@ get_command() ->
     RawChar = io:get_chars("Command: ", 1),
     CommandChar = case RawChar of
         "\n" ->
-            %% Need to ignore this binary when running from the Erlang shell,
+            %% Need to ignore this when running from the Erlang shell,
             %% where the command needs to be followed by an Enter.
             get_command();
         _ ->

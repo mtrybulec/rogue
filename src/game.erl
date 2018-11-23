@@ -67,9 +67,9 @@ play({game, GameData} = Game) ->
                             {X, Y}
                     end,
     
-                    %% Don't hit the wall - you'll hurt yourself!
                     NewStrength = case maze:is_empty(Maze, NewX, NewY) of
                         false ->
+                            %% Don't hit the wall - you'll hurt yourself!
                             Strength - ?StrengthLossOnHittingWall;
                         true ->
                             %% Running around saps energy...
