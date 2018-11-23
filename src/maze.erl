@@ -192,7 +192,7 @@ is_outside(_X, _Y) ->
 is_outside({room, {{X1, Y1}, {X2, Y2}}}) ->
     is_outside(X1, Y1) orelse is_outside(X2, Y2).
 
-overlaps([{room, {{X1, Y1}, {X2, Y2}}} | T], {room, {{PosX1, PosY1}, {PosX2, PosY2}}} = Room) ->
+overlaps([{_, {{X1, Y1}, {X2, Y2}}} | T], {room, {{PosX1, PosY1}, {PosX2, PosY2}}} = Room) ->
     case max(X1, X2) < min(PosX1, PosX2) orelse
         min(X1, X2) > max(PosX1, PosX2) orelse
         max(Y1, Y2) < min(PosY1, PosY2) orelse
