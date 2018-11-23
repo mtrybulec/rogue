@@ -109,12 +109,10 @@ move({game, GameData} = _Game, Command) ->
             console:move(Maze, {X, Y}, NewPosition),
             case maps:get(running, HeroData) of
                 {true, _Direction} ->
-                    {NextX, NextY} = {NewX + DeltaX, NewY + DeltaY},
-                    case maze:is_empty(Maze, NextX, NextY)andalso
-                        not maze:is_door(Maze, NextX, NextY) of
-                        true ->
-                            move(NewGame, Command);
+                    case stop_running(Maze, NewX, NewY, DeltaX, DeltaY) of
                         false ->
+                            move(NewGame, Command);
+                        true ->
                             StopRunningHeroData = NewHeroData#{running => false},
                             {game, GameData#{hero => {hero, StopRunningHeroData}}}
                     end;
@@ -134,3 +132,13 @@ direction_to_deltas(Direction) ->
         command_move_right ->
             {1, 0}
     end.
+
+stop_running(Maze, X, Y, DeltaX, DeltaY) ->
+    {NextX, NextY} = {X + DeltaX, Y + DeltaY},
+    {Ort1X, Ort1Y} = {X + DeltaY, Y + DeltaX},
+    {Ort2X, Ort2Y} = {X - DeltaY, Y - DeltaX},
+    not maze:is_empty(Maze, NextX, NextY) orelse
+        maze:is_door(Maze, NextX, NextY) orelse
+        maze:is_empty(Maze, Ort1X, Ort1Y) orelse
+        maze:is_empty(Maze, Ort2X, Ort2Y).
+    
