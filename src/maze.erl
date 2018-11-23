@@ -99,7 +99,7 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, 0) ->
             
             Room = {room, RoomPosition},
             
-            case is_outside(Room) orelse overlaps(Maze, Room) of
+            case is_outside(Room) orelse room_overlaps(Maze, Room) of
                 true ->
                     generate_corridor(Maze, X, Y, DeltaX, DeltaY, 0);
                 false ->
@@ -121,9 +121,9 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
             %% so that comparisons for inclusion testing are easier:
             case DeltaX + DeltaY of
                 1 ->
-                    [{corridor, {{X, Y}, {EndX, EndY}}}];
+                    {corridor, {{X, Y}, {EndX, EndY}}};
                 -1 ->
-                    [{corridor, {{EndX, EndY}, {X, Y}}}]
+                    {corridor, {{EndX, EndY}, {X, Y}}}
             end
     end,
     
@@ -133,7 +133,14 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
         2 ->
             -1
     end,
-    Segment ++ generate_corridor(Maze, EndX, EndY, DeltaY * DeltaChange, DeltaX * DeltaChange, SegmentCount - 1).
+
+    case overlaps_rooms(Maze, Segment) of
+        true ->
+            generate_corridor(Maze, X, Y, DeltaX * DeltaChange, DeltaY * DeltaChange, SegmentCount - 1);
+        false ->
+            %% DeltaX/Y are substituted intentionally to switch direction to a perpendicular one:
+            [Segment] ++ generate_corridor([Segment] ++ Maze, EndX, EndY, DeltaY * DeltaChange, DeltaX * DeltaChange, SegmentCount - 1)
+    end.
 
 is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
     X1 < PosX, Y1 < PosY, X2 > PosX, Y2 > PosY ->
@@ -192,17 +199,32 @@ is_outside(_X, _Y) ->
 is_outside({room, {{X1, Y1}, {X2, Y2}}}) ->
     is_outside(X1, Y1) orelse is_outside(X2, Y2).
 
-overlaps([{_, {{X1, Y1}, {X2, Y2}}} | T], {room, {{PosX1, PosY1}, {PosX2, PosY2}}} = Room) ->
+room_overlaps([{_, {{X1, Y1}, {X2, Y2}}} | T], {room, {{PosX1, PosY1}, {PosX2, PosY2}}} = Room) ->
     case max(X1, X2) < min(PosX1, PosX2) orelse
         min(X1, X2) > max(PosX1, PosX2) orelse
         max(Y1, Y2) < min(PosY1, PosY2) orelse
         min(Y1, Y2) > max(PosY1, PosY2) of
         true ->
-            overlaps(T, Room);
+            room_overlaps(T, Room);
         false ->
             true
     end;
-overlaps([_H | T], Room) ->
-    overlaps(T, Room);
-overlaps([], _Room) ->
+room_overlaps([_H | T], Room) ->
+    room_overlaps(T, Room);
+room_overlaps([], _Room) ->
+    false.
+
+overlaps_rooms([{room, {{X1, Y1}, {X2, Y2}}} | T], {corridor, {{PosX1, PosY1}, {PosX2, PosY2}}} = Corridor) ->
+    case max(X1, X2) < min(PosX1, PosX2) orelse
+        min(X1, X2) > max(PosX1, PosX2) orelse
+        max(Y1, Y2) < min(PosY1, PosY2) orelse
+        min(Y1, Y2) > max(PosY1, PosY2) of
+        true ->
+            overlaps_rooms(T, Corridor);
+        false ->
+            true
+    end;
+overlaps_rooms([_H | T], Corridor) ->
+    overlaps_rooms(T, Corridor);
+overlaps_rooms([], _Corridor) ->
     false.
