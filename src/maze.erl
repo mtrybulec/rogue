@@ -65,7 +65,7 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY) ->
     SegmentCount = rand:uniform(?MaxCorridorSegmentCount),
     generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount).
 
-generate_corridor(_Maze, X, Y, DeltaX, DeltaY, 0) ->
+generate_corridor(Maze, X, Y, DeltaX, DeltaY, 0) ->
     case rand:uniform(?ReciprocalDeadEnd) of
         1 ->
             [];
@@ -97,7 +97,14 @@ generate_corridor(_Maze, X, Y, DeltaX, DeltaY, 0) ->
                     end
             end,
             
-            [{door, {DoorX, DoorY}}, {room, RoomPosition}]
+            Room = {room, RoomPosition},
+            
+            case overlaps(Maze, Room) of
+                true ->
+                    generate_corridor(Maze, X, Y, DeltaX, DeltaY, 0);
+                false ->
+                    [{door, {DoorX, DoorY}}, {room, RoomPosition}]
+            end
     end;
 generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
     SegmentLength = rand:uniform(?MaxCorridorSegmentLength),
@@ -174,4 +181,19 @@ is_edge(X, Y) when
     X == 1; Y == 1; X == ?ScreenWidth; Y == ?ScreenHeight ->
     true;
 is_edge(_X, _Y) ->
+    false.
+
+overlaps([{room, {{X1, Y1}, {X2, Y2}}} | T], {room, {{PosX1, PosY1}, {PosX2, PosY2}}} = Room) ->
+    case max(X1, X2) < min(PosX1, PosX2) orelse
+        min(X1, X2) > max(PosX1, PosX2) orelse
+        max(Y1, Y2) < min(PosY1, PosY2) orelse
+        min(Y1, Y2) > max(PosY1, PosY2) of
+        true ->
+            overlaps(T, Room);
+        false ->
+            true
+    end;
+overlaps([_H | T], Room) ->
+    overlaps(T, Room);
+overlaps([], _Room) ->
     false.
