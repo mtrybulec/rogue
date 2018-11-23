@@ -110,7 +110,8 @@ move({game, GameData} = _Game, Command) ->
             case maps:get(running, HeroData) of
                 {true, _Direction} ->
                     {NextX, NextY} = {NewX + DeltaX, NewY + DeltaY},
-                    case maze:is_empty(Maze, NextX, NextY) of
+                    case maze:is_empty(Maze, NextX, NextY)andalso
+                        not maze:is_door(Maze, NextX, NextY) of
                         true ->
                             move(NewGame, Command);
                         false ->
