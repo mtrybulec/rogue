@@ -135,14 +135,34 @@ get_command() ->
     %% clear_eol/0 is needed when running from the Erlang shell,
     %% after the user inputs several characters before pressing Enter:
     clear_eol(),
-    Command = io:get_chars("Command: ", 1),
-    case Command of
+    RawChar = io:get_chars("Command: ", 1),
+    CommandChar = case RawChar of
         "\n" ->
             %% Need to ignore this binary when running from the Erlang shell,
             %% where the command needs to be followed by an Enter.
             get_command();
         _ ->
-            Command
+            RawChar
+    end,
+    case CommandChar of
+        "d" ->
+            command_debug;
+        "r" ->
+            command_restart;
+        "?" ->
+            command_help;
+        "q" ->
+            command_quit;
+        "i" ->
+            command_move_up;
+        "k" ->
+            command_move_down;
+        "j" ->
+            command_move_left;
+        "l" ->
+            command_move_right;
+        _ ->
+            command_unknown
     end.
 
 clear_message() ->

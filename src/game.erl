@@ -28,18 +28,18 @@ play({game, GameData} = Game) ->
     console:clear_message(),
 
     case Command of
-        "d" ->
+        command_debug ->
             console:debug(Game),
             play(Game);
-        "r" ->
+        command_restart ->
             play();
-        "?" ->
+        command_help ->
             console:help(Game),
             play(Game);
-        "q" ->
+        command_quit ->
             console:quit();
-        Go ->
-            case lists:member(Go, ["i", "k", "j", "l"]) of
+        _ ->
+            case lists:member(Command, [command_move_up, command_move_down, command_move_left, command_move_right]) of
                 true ->
                     Maze = maps:get(maze, GameData),
                     
@@ -49,14 +49,14 @@ play({game, GameData} = Game) ->
     
                     {stats, StatsData} = maps:get(stats, GameData),
     
-                    {NewX, NewY} = case Go of
-                        "i" ->
+                    {NewX, NewY} = case Command of
+                        command_move_up ->
                             {X, Y - 1};
-                        "k" ->
+                        command_move_down ->
                             {X, Y + 1};
-                        "j" ->
+                        command_move_left ->
                             {X - 1, Y};
-                        "l" ->
+                        command_move_right ->
                             {X + 1, Y}
                     end,
     
