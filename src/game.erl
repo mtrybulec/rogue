@@ -7,8 +7,6 @@
 -include("maze.hrl").
 
 play() ->
-    console:start(),
-    
     Maze = maze:generate_maze(),
     Hero = hero:initialize_hero(Maze),
     Game = {game, #{
@@ -30,18 +28,18 @@ play({game, GameData} = Game) ->
     console:clear_message(),
 
     case Command of
-        <<"d">> ->
+        "d" ->
             console:debug(Game),
             play(Game);
-        <<"r">> ->
+        "r" ->
             play();
-        <<"?">> ->
+        "?" ->
             console:help(Game),
             play(Game);
-        <<"q">> ->
+        "q" ->
             console:quit();
         Go ->
-            case lists:member(Go, [<<"i">>, <<"k">>, <<"j">>, <<"l">>]) of
+            case lists:member(Go, ["i", "k", "j", "l"]) of
                 true ->
                     Maze = maps:get(maze, GameData),
                     
@@ -52,13 +50,13 @@ play({game, GameData} = Game) ->
                     {stats, StatsData} = maps:get(stats, GameData),
     
                     {NewX, NewY} = case Go of
-                        <<"i">> ->
+                        "i" ->
                             {X, Y - 1};
-                        <<"k">> ->
+                        "k" ->
                             {X, Y + 1};
-                        <<"j">> ->
+                        "j" ->
                             {X - 1, Y};
-                        <<"l">> ->
+                        "l" ->
                             {X + 1, Y}
                     end,
     

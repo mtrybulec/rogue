@@ -4,8 +4,6 @@
 -module(console).
 
 -export([
-    start/0,
-    
     clear_screen/0,
     clear_eol/0,
     goto_xy/1,
@@ -33,9 +31,6 @@
 -define(CornerChar, "+").
 -define(DoorChar, "#").
 -define(HeroChar, "@").
-
-start() ->
-    io:setopts([{binary, true}]).
 
 clear_screen() ->
     io:format("\033[2J").
@@ -142,7 +137,7 @@ get_command() ->
     clear_eol(),
     Command = io:get_chars("Command: ", 1),
     case Command of
-        <<"\n">> ->
+        "\n" ->
             %% Need to ignore this binary when running from the Erlang shell,
             %% where the command needs to be followed by an Enter.
             get_command();
