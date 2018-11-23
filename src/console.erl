@@ -12,7 +12,7 @@
     draw_screen/1,
     draw_info/1,
     move/3,
-    get_command/0,
+    get_command/1,
     
     clear_message/0,
     welcome/0,
@@ -141,21 +141,24 @@ move(Maze, {OldX, OldY}, {NewX, NewY}) ->
     goto_xy(NewX, NewY),
     io:format(?HeroChar).
 
-get_command() ->
+get_command_char() ->
     goto_xy(0, ?CommandRow),
     %% clear_eol/0 is needed when running from the Erlang shell,
     %% after the user inputs several characters before pressing Enter:
     clear_eol(),
     RawChar = io:get_chars("Command: ", 1),
-    CommandChar = case RawChar of
+    case RawChar of
         "\n" ->
             %% Need to ignore this when running from the Erlang shell,
             %% where the command needs to be followed by an Enter.
-            get_command();
+            get_command_char();
         _ ->
             RawChar
-    end,
-    case CommandChar of
+    end.
+
+get_command(Hero) ->
+    CommandChar = get_command_char(),
+    Command = case string:to_lower(CommandChar) of
         "d" ->
             command_debug;
         "r" ->
@@ -174,6 +177,15 @@ get_command() ->
             command_move_right;
         _ ->
             command_unknown
+    end,
+
+    case string:to_upper(CommandChar) == CommandChar of
+        true ->
+            {hero, HeroData} = Hero,
+            NewHero = {hero, HeroData#{running => {true, Command}}},
+            {NewHero, Command};
+        false ->
+            {Hero, Command}
     end.
 
 clear_message() ->
@@ -200,6 +212,8 @@ help(Game) ->
     io:format("j - go West~n"),
     io:format("l - go East~n"),
     io:format("q - quit~n"),
+    io:format("~n"),
+    io:format("Shift + a 'go' command - start running~n"),
     flush_io(),
     io:get_chars("Press any key to continue...", 1),
     clear_screen(),

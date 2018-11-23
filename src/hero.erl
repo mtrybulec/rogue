@@ -14,6 +14,7 @@ initialize_hero(Maze) ->
          true ->
              {hero, #{
                  position => {X, Y},
+                 running => false,
                  strength => ?InitialStrength
              }};
          false ->
