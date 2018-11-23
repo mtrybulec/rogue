@@ -99,7 +99,7 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, 0) ->
             
             Room = {room, RoomPosition},
             
-            case overlaps(Maze, Room) of
+            case is_outside(Room) orelse overlaps(Maze, Room) of
                 true ->
                     generate_corridor(Maze, X, Y, DeltaX, DeltaY, 0);
                 false ->
@@ -182,6 +182,15 @@ is_edge(X, Y) when
     true;
 is_edge(_X, _Y) ->
     false.
+
+is_outside(X, Y) when
+    X < 1; Y < 1; X > ?ScreenWidth; Y > ?ScreenHeight ->
+    true;
+is_outside(_X, _Y) ->
+    false.
+
+is_outside({room, {{X1, Y1}, {X2, Y2}}}) ->
+    is_outside(X1, Y1) orelse is_outside(X2, Y2).
 
 overlaps([{room, {{X1, Y1}, {X2, Y2}}} | T], {room, {{PosX1, PosY1}, {PosX2, PosY2}}} = Room) ->
     case max(X1, X2) < min(PosX1, PosX2) orelse
