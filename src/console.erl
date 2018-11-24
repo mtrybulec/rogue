@@ -182,7 +182,7 @@ get_command(Hero) ->
     case string:to_upper(CommandChar) == CommandChar of
         true ->
             {hero, HeroData} = Hero,
-            NewHero = {hero, HeroData#{running => {true, Command}}},
+            NewHero = {hero, HeroData#{running => true}},
             {NewHero, Command};
         false ->
             {Hero, Command}

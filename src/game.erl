@@ -108,13 +108,25 @@ move({game, GameData} = _Game, Command) ->
         _ ->
             console:move(Maze, {X, Y}, NewPosition),
             case maps:get(running, HeroData) of
-                {true, _Direction} ->
+                true ->
                     case stop_running(Maze, NewX, NewY, DeltaX, DeltaY) of
                         false ->
                             move(NewGame, Command);
                         true ->
-                            StopRunningHeroData = NewHeroData#{running => false},
-                            {game, GameData#{hero => {hero, StopRunningHeroData}}}
+                            case restart_running_after_turn(Maze, NewX, NewY, DeltaX, DeltaY, 1) of
+                                true ->
+                                    NewCommand = deltas_to_direction(DeltaY, DeltaX),
+                                    move(NewGame, NewCommand);
+                                false ->
+                                    case restart_running_after_turn(Maze, NewX, NewY, DeltaX, DeltaY, -1) of
+                                        true ->
+                                            NewCommand = deltas_to_direction(-DeltaY, -DeltaX),
+                                            move(NewGame, NewCommand);
+                                        false ->
+                                            StopRunningHeroData = NewHeroData#{running => false},
+                                            {game, GameData#{hero => {hero, StopRunningHeroData}}}
+                                    end
+                            end
                     end;
                 false ->
                     NewGame
@@ -133,6 +145,18 @@ direction_to_deltas(Direction) ->
             {1, 0}
     end.
 
+deltas_to_direction(DeltaX, DeltaY) ->
+    case {DeltaX, DeltaY} of
+        {0, -1} ->
+            command_move_up;
+        {0, 1} ->
+            command_move_down;
+        {-1, 0} ->
+            command_move_left;
+        {1, 0} ->
+            command_move_right
+    end.
+
 stop_running(Maze, X, Y, DeltaX, DeltaY) ->
     {NextX, NextY} = {X + DeltaX, Y + DeltaY},
     {Ort1X, Ort1Y} = {X + DeltaY, Y + DeltaX},
@@ -141,4 +165,15 @@ stop_running(Maze, X, Y, DeltaX, DeltaY) ->
         maze:is_door(Maze, NextX, NextY) orelse
         maze:is_empty(Maze, Ort1X, Ort1Y) orelse
         maze:is_empty(Maze, Ort2X, Ort2Y).
+
+restart_running_after_turn(Maze, X, Y, DeltaX, DeltaY, TurnDirection) ->
+    {NextX, NextY} = {X + DeltaX, Y + DeltaY},
+    {Ort1X, Ort1Y} = {X + TurnDirection * DeltaY, Y + TurnDirection * DeltaX},
+    {Ort2X, Ort2Y} = {X - TurnDirection * DeltaY, Y - TurnDirection * DeltaX},
+    not maze:is_empty(Maze, NextX, NextY) andalso
+        maze:is_empty(Maze, Ort1X, Ort1Y) andalso
+        not maze:is_door(Maze, Ort1X, Ort1Y) andalso
+        not maze:is_empty(Maze, Ort2X, Ort2Y).
+        
+    
     
