@@ -9,7 +9,7 @@
     goto_xy/1,
     goto_xy/2,
 
-    draw_screen/1,
+    draw_board/1,
     draw_info/1,
     move/3,
     get_command/1,
@@ -44,7 +44,7 @@ goto_xy({X, Y}) ->
 goto_xy(X, Y) ->
     io:format("\033[~w;~wH", [Y, X]).
 
-draw_screen({game, GameData} = Game) ->
+draw_board({game, GameData} = Game) ->
     draw_maze(maps:get(maze, GameData)),
     draw_hero(maps:get(hero, GameData)),
     draw_info(Game).
@@ -217,7 +217,7 @@ help(Game) ->
     flush_io(),
     io:get_chars("Press any key to continue...", 1),
     clear_screen(),
-    draw_screen(Game).
+    draw_board(Game).
 
 hint() ->
     clear_message(),
@@ -242,7 +242,7 @@ debug(Game) ->
     flush_io(),
     io:get_chars("Press any key to continue...", 1),
     clear_screen(),
-    draw_screen(Game).
+    draw_board(Game).
 
 flush_io() ->
     case util:is_shell() of

@@ -7,8 +7,8 @@
 -include("maze.hrl").
 
 initialize_hero(Maze) ->
-    X = rand:uniform(?ScreenWidth),
-    Y = rand:uniform(?ScreenHeight),
+    X = rand:uniform(?BoardWidth),
+    Y = rand:uniform(?BoardHeight),
     
     case maze:is_empty(Maze, X, Y) of
          true ->

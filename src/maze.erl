@@ -26,14 +26,14 @@ generate_room_dimensions() -> {
 generate_room() ->
     {Width, Height} = generate_room_dimensions(),
     
-    X = rand:uniform(?ScreenWidth - Width),
-    Y = rand:uniform(?ScreenHeight - Height),
+    X = rand:uniform(?BoardWidth - Width),
+    Y = rand:uniform(?BoardHeight - Height),
 
     {room, {{X, Y}, {X + Width - 1, Y + Height - 1}}}.
 
 generate_door(Maze) ->
-    X = rand:uniform(?ScreenWidth),
-    Y = rand:uniform(?ScreenHeight),
+    X = rand:uniform(?BoardWidth),
+    Y = rand:uniform(?BoardHeight),
     
     case is_wall(Maze, X, Y) andalso
         not is_empty(Maze, X, Y) andalso
@@ -110,8 +110,8 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, 0) ->
     end;
 generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
     SegmentLength = rand:uniform(?MaxCorridorSegmentLength),
-    EndX = min(max(X + SegmentLength * DeltaX, 1), ?ScreenWidth),
-    EndY = min(max(Y + SegmentLength * DeltaY, 1), ?ScreenHeight),
+    EndX = min(max(X + SegmentLength * DeltaX, 1), ?BoardWidth),
+    EndY = min(max(Y + SegmentLength * DeltaY, 1), ?BoardHeight),
     
     Segment = case X == EndX andalso Y == EndY of
         true ->
@@ -187,13 +187,13 @@ is_door([], _PosX, _PosY) ->
     false.
 
 is_edge(X, Y) when
-    X == 1; Y == 1; X == ?ScreenWidth; Y == ?ScreenHeight ->
+    X == 1; Y == 1; X == ?BoardWidth; Y == ?BoardHeight ->
     true;
 is_edge(_X, _Y) ->
     false.
 
 is_outside(X, Y) when
-    X < 1; Y < 1; X > ?ScreenWidth; Y > ?ScreenHeight ->
+    X < 1; Y < 1; X > ?BoardWidth; Y > ?BoardHeight ->
     true;
 is_outside(_X, _Y) ->
     false.

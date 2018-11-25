@@ -1,10 +1,10 @@
 -define(Name, "Rogue").
 -define(Treasure, "The Thingamajig").
 
--define(ScreenWidth, 180).
--define(ScreenHeight, 60).
+-define(BoardWidth, 180).
+-define(BoardHeight, 60).
 
--define(InfoRow, ?ScreenHeight + 1).
+-define(InfoRow, ?BoardHeight + 1).
 -define(CommandRow, ?InfoRow + 1).
 -define(MessageRow, ?CommandRow + 1).
 

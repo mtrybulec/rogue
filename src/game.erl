@@ -19,7 +19,7 @@ play() ->
     
     console:clear_screen(),
     console:welcome(),
-    console:draw_screen(Game),
+    console:draw_board(Game),
     play(Game).
 
 play({game, GameData} = Game) ->
