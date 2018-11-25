@@ -1,6 +1,3 @@
-%% For tty control escape sequences, see
-%% http://ascii-table.com/ansi-escape-sequences.phphttp://ascii-table.com/ansi-escape-sequences.php
-
 -module(console).
 
 -export([
@@ -25,12 +22,8 @@
 
 -include("console.hrl").
 
--define(EmptyChar, ".").
--define(HorizWallChar, "-").
--define(VertWallChar, "|").
--define(CornerChar, "+").
--define(DoorChar, "#").
--define(HeroChar, "@").
+%% For tty control escape sequences, see
+%% http://ascii-table.com/ansi-escape-sequences.phphttp://ascii-table.com/ansi-escape-sequences.php
 
 clear_screen() ->
     io:format("\033[2J").

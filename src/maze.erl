@@ -77,7 +77,7 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, 0) ->
             DoorY = Y + DeltaY,
     
             {RoomWidth, RoomHeight} = generate_room_dimensions(),
-            RoomPosition = case DeltaX of
+            RoomCoords = case DeltaX of
                 0 ->
                     %% Careful not to put the door in the room's corner:
                     RoomX1 = X - RoomWidth + 1 + rand:uniform(RoomWidth - 2),
@@ -100,13 +100,13 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, 0) ->
                     end
             end,
             
-            Room = {room, RoomPosition},
+            Room = {room, RoomCoords},
             
             case is_outside(Room) orelse room_overlaps(Maze, Room) of
                 true ->
                     generate_corridor(Maze, X, Y, DeltaX, DeltaY, 0);
                 false ->
-                    [{door, {DoorX, DoorY}}, {room, RoomPosition}]
+                    [{door, {DoorX, DoorY}}, {room, RoomCoords}]
             end
     end;
 generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
