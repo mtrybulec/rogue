@@ -213,7 +213,7 @@ help(Game) ->
     io:format("l - go East~n"),
     io:format("q - quit~n"),
     io:format("~n"),
-    io:format("Shift + a 'go' command - start running~n"),
+    io:format("Shift + a 'go' command - run (use Caps Lock to toggle run mode)~n"),
     flush_io(),
     io:get_chars("Press any key to continue...", 1),
     clear_screen(),

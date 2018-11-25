@@ -44,7 +44,7 @@ play({game, GameData} = Game) ->
         _ ->
             case lists:member(Command, [command_move_up, command_move_down, command_move_left, command_move_right]) of
                 true ->
-                    GameAfterMove = move(NewGame, Command),
+                    GameAfterMove = move(NewGame, Command, undefined),
                     case GameAfterMove of
                         rip ->
                             rip;
@@ -57,7 +57,16 @@ play({game, GameData} = Game) ->
             end
     end.
 
-move({game, GameData} = _Game, Command) ->
+move({game, GameData} = Game, Command, undefined) ->
+    Maze = maps:get(maze, GameData),
+    {hero, HeroData} = maps:get(hero, GameData),
+    {X, Y} = maps:get(position, HeroData),
+    {DeltaX, DeltaY} = direction_to_deltas(Command),
+    IsEmptyOrt1 = maze:is_empty(Maze, X + DeltaY, Y + DeltaX),
+    IsEmptyOrt2 = maze:is_empty(Maze, X - DeltaY, Y - DeltaX),
+    
+    move(Game, Command, {IsEmptyOrt1, IsEmptyOrt2});
+move({game, GameData} = _Game, Command, {IsEmptyOrt1, IsEmptyOrt2}) ->
     Hero = maps:get(hero, GameData),
     Maze = maps:get(maze, GameData),
     
@@ -109,24 +118,14 @@ move({game, GameData} = _Game, Command) ->
             console:move(Maze, {X, Y}, NewPosition),
             case maps:get(running, HeroData) of
                 true ->
-                    case stop_running(Maze, NewX, NewY, DeltaX, DeltaY) of
+                    {StopRunning, NewIsEmptyOrt1, NewIsEmptyOrt2} =
+                        stop_running(Maze, NewX, NewY, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
+                    case StopRunning of
                         false ->
-                            move(NewGame, Command);
+                            move(NewGame, Command, {NewIsEmptyOrt1, NewIsEmptyOrt2});
                         true ->
-                            case restart_running_after_turn(Maze, NewX, NewY, DeltaX, DeltaY, 1) of
-                                true ->
-                                    NewCommand = deltas_to_direction(DeltaY, DeltaX),
-                                    move(NewGame, NewCommand);
-                                false ->
-                                    case restart_running_after_turn(Maze, NewX, NewY, DeltaX, DeltaY, -1) of
-                                        true ->
-                                            NewCommand = deltas_to_direction(-DeltaY, -DeltaX),
-                                            move(NewGame, NewCommand);
-                                        false ->
-                                            StopRunningHeroData = NewHeroData#{running => false},
-                                            {game, GameData#{hero => {hero, StopRunningHeroData}}}
-                                    end
-                            end
+                            StopRunningHeroData = NewHeroData#{running => false},
+                            {game, GameData#{hero => {hero, StopRunningHeroData}}}
                     end;
                 false ->
                     NewGame
@@ -145,35 +144,31 @@ direction_to_deltas(Direction) ->
             {1, 0}
     end.
 
-deltas_to_direction(DeltaX, DeltaY) ->
-    case {DeltaX, DeltaY} of
-        {0, -1} ->
-            command_move_up;
-        {0, 1} ->
-            command_move_down;
-        {-1, 0} ->
-            command_move_left;
-        {1, 0} ->
-            command_move_right
-    end.
-
-stop_running(Maze, X, Y, DeltaX, DeltaY) ->
+%% Stop running when:
+%% - the next cell in the current direction is not empty,
+%% - the next cell is next to a door,
+%% - the corridor gets wider (from its narrowest point during the current run).
+stop_running(Maze, X, Y, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2) ->
     {NextX, NextY} = {X + DeltaX, Y + DeltaY},
+
     {Ort1X, Ort1Y} = {X + DeltaY, Y + DeltaX},
     {Ort2X, Ort2Y} = {X - DeltaY, Y - DeltaX},
-    not maze:is_empty(Maze, NextX, NextY) orelse
-        maze:is_door(Maze, NextX, NextY) orelse
-        maze:is_empty(Maze, Ort1X, Ort1Y) orelse
-        maze:is_empty(Maze, Ort2X, Ort2Y).
 
-restart_running_after_turn(Maze, X, Y, DeltaX, DeltaY, TurnDirection) ->
-    {NextX, NextY} = {X + DeltaX, Y + DeltaY},
-    {Ort1X, Ort1Y} = {X + TurnDirection * DeltaY, Y + TurnDirection * DeltaX},
-    {Ort2X, Ort2Y} = {X - TurnDirection * DeltaY, Y - TurnDirection * DeltaX},
-    not maze:is_empty(Maze, NextX, NextY) andalso
-        maze:is_empty(Maze, Ort1X, Ort1Y) andalso
-        not maze:is_door(Maze, Ort1X, Ort1Y) andalso
-        not maze:is_empty(Maze, Ort2X, Ort2Y).
-        
-    
-    
+    Result = not maze:is_empty(Maze, NextX, NextY) orelse
+        maze:is_door(Maze, NextX, NextY) orelse
+        maze:is_door(Maze, Ort1X, Ort1Y) orelse
+        maze:is_door(Maze, Ort2X, Ort2Y),
+
+    case Result of
+        true ->
+            {true, IsEmptyOrt1, IsEmptyOrt2};
+        false ->
+            NewIsEmptyOrt1 = maze:is_empty(Maze, Ort1X, Ort1Y),
+            NewIsEmptyOrt2 = maze:is_empty(Maze, Ort2X, Ort2Y),
+            {
+                IsEmptyOrt1 < maze:is_empty(Maze, Ort1X, Ort1Y) orelse
+                IsEmptyOrt2 < maze:is_empty(Maze, Ort2X, Ort2Y),
+                NewIsEmptyOrt1,
+                NewIsEmptyOrt2
+            }
+    end.
