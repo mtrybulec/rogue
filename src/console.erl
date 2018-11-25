@@ -23,7 +23,7 @@
     debug/1
 ]).
 
--include("maze.hrl").
+-include("console.hrl").
 
 -define(EmptyChar, ".").
 -define(HorizWallChar, "-").

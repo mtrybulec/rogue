@@ -4,7 +4,8 @@
     initialize_hero/1
 ]).
 
--include("maze.hrl").
+-include("board.hrl").
+-include("hero.hrl").
 
 initialize_hero(Maze) ->
     X = rand:uniform(?BoardWidth),

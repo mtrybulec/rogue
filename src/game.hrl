@@ -1,0 +1,2 @@
+-define(ReciprocalStrengthLossOnMove, 10).
+-define(StrengthLossOnHittingWall, 1).

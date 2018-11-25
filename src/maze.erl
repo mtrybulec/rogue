@@ -7,6 +7,7 @@
     is_door/3
 ]).
 
+-include("board.hrl").
 -include("maze.hrl").
 
 generate_maze() ->

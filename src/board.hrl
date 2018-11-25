@@ -1,0 +1,2 @@
+-define(BoardWidth, 180).
+-define(BoardHeight, 60).

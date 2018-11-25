@@ -4,7 +4,7 @@
     play/0
 ]).
 
--include("maze.hrl").
+-include("game.hrl").
 
 play() ->
     Maze = maze:generate_maze(),
