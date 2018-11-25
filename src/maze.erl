@@ -151,7 +151,7 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
             -1
     end,
 
-    case overlaps_rooms(Maze, Segment) of
+    case (Segment == []) orelse overlaps_rooms(Maze, Segment) of
         true ->
             generate_corridor(Maze, X, Y, DeltaX * DeltaChange, DeltaY * DeltaChange, SegmentCount - 1);
         false ->
