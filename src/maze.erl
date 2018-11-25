@@ -1,23 +1,37 @@
 -module(maze).
 
 -export([
-    generate_maze/0,
+    generate_maze/1,
     is_empty/3,
     is_wall/3,
-    is_door/3
+    is_door/3,
+    is_stairs/3
 ]).
 
 -include("board.hrl").
 -include("maze.hrl").
 
-generate_maze() ->
+generate_maze(IsLastLevel) ->
     FirstRoom = [generate_room()],
-    generate_maze(FirstRoom, ?MazeComplexity).
+    generate_maze(IsLastLevel, FirstRoom, ?MazeComplexity).
 
-generate_maze(Maze, 0) ->
+generate_maze(false, Maze, 0) ->
+    [generate_stairs(Maze)] ++ Maze;
+generate_maze(true, Maze, 0) ->
     Maze;
-generate_maze(Maze, Trials) ->
-    generate_maze(generate_door(Maze) ++ Maze, Trials - 1).
+generate_maze(IsLastLevel, Maze, Trials) ->
+    generate_maze(IsLastLevel, generate_door(Maze) ++ Maze, Trials - 1).
+
+generate_stairs(Maze) ->
+    X = rand:uniform(?BoardWidth),
+    Y = rand:uniform(?BoardHeight),
+    case maze:is_empty(Maze, X, Y) andalso
+        not maze:is_door(Maze, X, Y) of
+        true ->
+            {stairs, {X, Y}};
+        false ->
+            generate_stairs(Maze)
+    end.
 
 generate_room_dimensions() -> {
     ?MinRoomWidth + rand:uniform(?MaxRoomWidth - ?MinRoomWidth),
@@ -151,6 +165,9 @@ is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
 is_empty([{door, {X, Y}} | _T], PosX, PosY) when
     X == PosX, Y == PosY ->
     true;
+is_empty([{stairs, {X, Y}} | _T], PosX, PosY) when
+    X == PosX, Y == PosY ->
+    true;
 is_empty([{corridor, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
     X1 =< PosX, Y1 =< PosY, X2 >= PosX, Y2 >= PosY ->
     true;
@@ -185,6 +202,14 @@ is_door([{door, {X, Y}} | _T], PosX, PosY) when
 is_door([_H | T], PosX, PosY) ->
     is_door(T, PosX, PosY);
 is_door([], _PosX, _PosY) ->
+    false.
+
+is_stairs([{stairs, {X, Y}} | _T], PosX, PosY) when
+    X == PosX, Y == PosY ->
+    true;
+is_stairs([_H | T], PosX, PosY) ->
+    is_stairs(T, PosX, PosY);
+is_stairs([], _PosX, _PosY) ->
     false.
 
 is_edge(X, Y) when

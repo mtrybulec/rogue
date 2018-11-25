@@ -6,8 +6,11 @@
 
 -include("game.hrl").
 
+is_last_level() ->
+    false.
+
 play() ->
-    Maze = maze:generate_maze(),
+    Maze = maze:generate_maze(is_last_level()),
     Hero = hero:initialize_hero(Maze),
     Game = {game, #{
         maze => Maze,

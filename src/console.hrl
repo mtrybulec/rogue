@@ -8,6 +8,7 @@
 -define(MessageRow, ?CommandRow + 1).
 
 -define(EmptyChar, ".").
+-define(StairsChar, "=").
 -define(HorizWallChar, "-").
 -define(VertWallChar, "|").
 -define(CornerChar, "+").

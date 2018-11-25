@@ -50,7 +50,8 @@ draw_info({game, GameData} = _Game) ->
 
 draw_maze(Maze) ->
     draw_rooms(Maze),
-    draw_passages(Maze).
+    draw_passages(Maze),
+    draw_stairs(Maze).
 
 draw_rooms([{room, _} = Room | T]) ->
     draw_room(Room),
@@ -113,6 +114,14 @@ draw_corridor({corridor, {{X1, Y1}, {X2, Y2}}}) ->
     
     draw_corridor({corridor, {{X1 + DeltaX, Y1 + DeltaY}, {X2, Y2}}}).
 
+draw_stairs([{stairs, {X, Y}} | _T]) ->
+    goto_xy(X, Y),
+    io:format(?StairsChar);
+draw_stairs([_ | T]) ->
+    draw_stairs(T);
+draw_stairs([]) ->
+    ok.
+
 draw_hero({hero, Data} = _Hero) ->
     goto_xy(maps:get(position, Data)),
     io:format(?HeroChar).
@@ -125,7 +134,12 @@ move(Maze, {OldX, OldY}, {NewX, NewY}) ->
         true ->
             io:format(?DoorChar);
         false ->
-            io:format(?EmptyChar)
+            case maze:is_stairs(Maze, OldX, OldY) of
+                true ->
+                    io:format(?StairsChar);
+                false ->
+                    io:format(?EmptyChar)
+            end
     end,
     goto_xy(NewX, NewY),
     io:format(?HeroChar).
