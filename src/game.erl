@@ -124,8 +124,20 @@ move({game, GameData} = _Game, Command, {IsEmptyOrt1, IsEmptyOrt2}) ->
                         false ->
                             move(NewGame, Command, {NewIsEmptyOrt1, NewIsEmptyOrt2});
                         true ->
-                            StopRunningHeroData = NewHeroData#{running => false},
-                            {game, GameData#{hero => {hero, StopRunningHeroData}}}
+                            case restart_running_after_turn(Maze, NewX, NewY, DeltaX, DeltaY, 1) of
+                                true ->
+                                    NewCommand = deltas_to_direction(DeltaY, DeltaX),
+                                    move(NewGame, NewCommand, undefined);
+                                false ->
+                                    case restart_running_after_turn(Maze, NewX, NewY, DeltaX, DeltaY, -1) of
+                                        true ->
+                                            NewCommand = deltas_to_direction(-DeltaY, -DeltaX),
+                                            move(NewGame, NewCommand, undefined);
+                                        false ->
+                                            StopRunningHeroData = NewHeroData#{running => false},
+                                            {game, GameData#{hero => {hero, StopRunningHeroData}}}
+                                    end
+                            end
                     end;
                 false ->
                     NewGame
@@ -142,6 +154,18 @@ direction_to_deltas(Direction) ->
             {-1, 0};
         command_move_right ->
             {1, 0}
+    end.
+
+deltas_to_direction(DeltaX, DeltaY) ->
+    case {DeltaX, DeltaY} of
+        {0, -1} ->
+            command_move_up;
+        {0, 1} ->
+            command_move_down;
+        {-1, 0} ->
+            command_move_left;
+        {1, 0} ->
+            command_move_right
     end.
 
 %% Stop running when:
@@ -172,3 +196,12 @@ stop_running(Maze, X, Y, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2) ->
                 NewIsEmptyOrt2
             }
     end.
+
+restart_running_after_turn(Maze, X, Y, DeltaX, DeltaY, TurnDirection) ->
+    {NextX, NextY} = {X + DeltaX, Y + DeltaY},
+    {Ort1X, Ort1Y} = {X + TurnDirection * DeltaY, Y + TurnDirection * DeltaX},
+    {Ort2X, Ort2Y} = {X - TurnDirection * DeltaY, Y - TurnDirection * DeltaX},
+    not maze:is_empty(Maze, NextX, NextY) andalso
+        maze:is_empty(Maze, Ort1X, Ort1Y) andalso
+        not maze:is_door(Maze, Ort1X, Ort1Y) andalso
+        not maze:is_empty(Maze, Ort2X, Ort2Y).
