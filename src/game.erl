@@ -26,22 +26,17 @@ play({game, GameData} = Game) ->
     {hero, HeroData} = maps:get(hero, GameData),
 
     console:draw_info(Game),
-    {Command, Running} = console:get_command(),
+    {Command, Running} = console:get_command(Game),
     
     NewHero = {hero, HeroData#{running => Running}},
     NewGame = {game, GameData#{hero => NewHero}},
 
     case Command of
-        command_debug ->
-            console:debug(NewGame),
-            play(NewGame);
         command_restart ->
             play();
-        command_help ->
-            console:help(NewGame),
-            play(NewGame);
         command_quit ->
-            console:quit();
+            console:quit(),
+            quit;
         _ ->
             GameAfterMove = move(NewGame, Command, undefined),
             case GameAfterMove of
@@ -108,7 +103,8 @@ move({game, GameData} = _Game, Command, {IsEmptyOrt1, IsEmptyOrt2}) ->
     
     case NewStrength of
         0 ->
-            console:dead(NewGame);
+            console:dead(NewGame),
+            rip;
         _ ->
             console:move(Maze, {X, Y}, NewPosition),
             case maps:get(running, HeroData) of

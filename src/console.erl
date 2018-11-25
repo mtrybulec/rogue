@@ -9,13 +9,11 @@
     draw_board/1,
     draw_info/1,
     move/3,
-    get_command/0,
+    get_command/1,
     
     welcome/0,
-    help/1,
     dead/1,
-    quit/0,
-    debug/1
+    quit/0
 ]).
 
 -include("console.hrl").
@@ -147,7 +145,7 @@ get_command_char() ->
             RawChar
     end.
 
-get_command() ->
+get_command(Game) ->
     CommandChar = get_command_char(),
     clear_message(),
     Command = case string:to_lower(CommandChar) of
@@ -172,9 +170,15 @@ get_command() ->
     end,
     
     case Command of
+        command_debug ->
+            debug(Game),
+            get_command(Game);
+        command_help ->
+            help(Game),
+            get_command(Game);
         command_unknown ->
             hint(),
-            get_command();
+            get_command(Game);
         _ ->
             {Command, string:to_upper(CommandChar) == CommandChar}
     end.
@@ -218,13 +222,11 @@ hint() ->
 dead(Game) ->
     draw_info(Game),
     clear_message(),
-    io:format("You died of exhaustion; game over.~n"),
-    rip.
+    io:format("You died of exhaustion; game over.~n").
 
 quit() ->
     clear_message(),
-    io:format("Quitting...~n"),
-    quit.
+    io:format("Quitting...~n").
 
 debug(Game) ->
     clear_screen(),
