@@ -162,11 +162,9 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
 is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
     X1 < PosX, Y1 < PosY, X2 > PosX, Y2 > PosY ->
     true;
-is_empty([{door, {X, Y}} | _T], PosX, PosY) when
-    X == PosX, Y == PosY ->
+is_empty([{door, {PosX, PosY}} | _T], PosX, PosY) ->
     true;
-is_empty([{stairs, {X, Y}} | _T], PosX, PosY) when
-    X == PosX, Y == PosY ->
+is_empty([{stairs, {PosX, PosY}} | _T], PosX, PosY) ->
     true;
 is_empty([{corridor, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
     X1 =< PosX, Y1 =< PosY, X2 >= PosX, Y2 >= PosY ->
@@ -196,16 +194,14 @@ is_corner([_H | T], PosX, PosY) ->
 is_corner([], _PosX, _PosY) ->
     false.
 
-is_door([{door, {X, Y}} | _T], PosX, PosY) when
-    X == PosX, Y == PosY ->
+is_door([{door, {PosX, PosY}} | _T], PosX, PosY) ->
     true;
 is_door([_H | T], PosX, PosY) ->
     is_door(T, PosX, PosY);
 is_door([], _PosX, _PosY) ->
     false.
 
-is_stairs([{stairs, {X, Y}} | _T], PosX, PosY) when
-    X == PosX, Y == PosY ->
+is_stairs([{stairs, {PosX, PosY}} | _T], PosX, PosY) ->
     true;
 is_stairs([_H | T], PosX, PosY) ->
     is_stairs(T, PosX, PosY);
