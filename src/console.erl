@@ -179,6 +179,8 @@ get_command(Game) ->
             command_move_left;
         "l" ->
             command_move_right;
+        "t" ->
+            take_stairs;
         _ ->
             command_unknown
     end,
@@ -220,6 +222,7 @@ help(Game) ->
     io:format("k - go South~n"),
     io:format("j - go West~n"),
     io:format("l - go East~n"),
+    io:format("t - take the stairs~n"),
     io:format("q - quit~n"),
     io:format("~n"),
     io:format("Shift + a 'go' command - run (use Caps Lock to toggle run mode)~n"),

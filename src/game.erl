@@ -30,9 +30,6 @@ play({game, GameData} = Game) ->
 
     console:draw_info(Game),
     {Command, Running} = console:get_command(Game),
-    
-    NewHero = {hero, HeroData#{running => Running}},
-    NewGame = {game, GameData#{hero => NewHero}},
 
     case Command of
         command_restart ->
@@ -40,8 +37,30 @@ play({game, GameData} = Game) ->
         command_quit ->
             console:quit(),
             quit;
+        take_stairs ->
+            Maze = maps:get(maze, GameData),
+            {X, Y} = maps:get(position, HeroData),
+
+            case maze:is_stairs(Maze, X, Y) of
+                true ->
+                    NewMaze = maze:generate_maze(is_last_level()),
+                    NewHero = hero:initialize_hero(NewMaze),
+                    NewGame = {game, GameData#{
+                        maze => NewMaze,
+                        hero => NewHero
+                    }},
+                    console:clear_screen(),
+                    console:draw_board(NewGame),
+                    play(NewGame);
+                false ->
+                    play(Game)
+            end;
         _ ->
+            NewHero = {hero, HeroData#{running => Running}},
+            NewGame = {game, GameData#{hero => NewHero}},
+
             GameAfterMove = move(NewGame, Command, undefined),
+
             case GameAfterMove of
                 rip ->
                     rip;
