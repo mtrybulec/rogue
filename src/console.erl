@@ -9,12 +9,10 @@
     draw_board/1,
     draw_info/1,
     move/3,
-    get_command/1,
+    get_command/0,
     
-    clear_message/0,
     welcome/0,
     help/1,
-    hint/0,
     dead/1,
     quit/0,
     debug/1
@@ -149,8 +147,9 @@ get_command_char() ->
             RawChar
     end.
 
-get_command(Hero) ->
+get_command() ->
     CommandChar = get_command_char(),
+    clear_message(),
     Command = case string:to_lower(CommandChar) of
         "d" ->
             command_debug;
@@ -171,14 +170,13 @@ get_command(Hero) ->
         _ ->
             command_unknown
     end,
-
-    case string:to_upper(CommandChar) == CommandChar of
-        true ->
-            {hero, HeroData} = Hero,
-            NewHero = {hero, HeroData#{running => true}},
-            {NewHero, Command};
-        false ->
-            {Hero, Command}
+    
+    case Command of
+        command_unknown ->
+            hint(),
+            get_command();
+        _ ->
+            {Command, string:to_upper(CommandChar) == CommandChar}
     end.
 
 clear_message() ->

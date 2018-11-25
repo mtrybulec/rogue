@@ -23,12 +23,13 @@ play() ->
     play(Game).
 
 play({game, GameData} = Game) ->
-    Hero = maps:get(hero, GameData),
+    {hero, HeroData} = maps:get(hero, GameData),
 
     console:draw_info(Game),
-    {NewHero, Command} = console:get_command(Hero),
+    {Command, Running} = console:get_command(),
+    
+    NewHero = {hero, HeroData#{running => Running}},
     NewGame = {game, GameData#{hero => NewHero}},
-    console:clear_message(),
 
     case Command of
         command_debug ->
@@ -42,18 +43,12 @@ play({game, GameData} = Game) ->
         command_quit ->
             console:quit();
         _ ->
-            case lists:member(Command, [command_move_up, command_move_down, command_move_left, command_move_right]) of
-                true ->
-                    GameAfterMove = move(NewGame, Command, undefined),
-                    case GameAfterMove of
-                        rip ->
-                            rip;
-                        _ ->
-                            play(GameAfterMove)
-                    end;
-                false ->
-                    console:hint(),
-                    play(NewGame)
+            GameAfterMove = move(NewGame, Command, undefined),
+            case GameAfterMove of
+                rip ->
+                    rip;
+                _ ->
+                    play(GameAfterMove)
             end
     end.
 
