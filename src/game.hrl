@@ -1,2 +1,2 @@
 -define(ReciprocalStrengthLossOnMove, 10).
--define(StrengthLossOnHittingWall, 1).
+-define(StrengthLossOnHittingWallOrGround, 1).

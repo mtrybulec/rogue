@@ -46,10 +46,17 @@ play({game, GameData} = Game) ->
             case maze:is_stairs(Maze, X, Y) of
                 true ->
                     NewMaze = maze:generate_maze(is_last_level()),
-                    NewHero = hero:initialize_hero(NewMaze),
+                    {hero, NewHeroData} = hero:initialize_hero(NewMaze),
+                    Strength = maps:get(strength, NewHeroData),
+                    NewStrength = case rand:uniform(?ReciprocalStrengthLossOnMove) of
+                        1 ->
+                            Strength - 1;
+                        _ ->
+                            Strength
+                    end,
                     NewGame = {game, GameData#{
                         maze => NewMaze,
-                        hero => NewHero,
+                        hero => {hero, NewHeroData#{strength => NewStrength}},
                         stats => {stats, StatsData#{
                             turn => maps:get(turn, StatsData) + 1
                         }}
@@ -60,7 +67,7 @@ play({game, GameData} = Game) ->
 
                     play(NewGame);
                 false ->
-                    NewStrength = maps:get(strength, HeroData) - 1,
+                    NewStrength = maps:get(strength, HeroData) - ?StrengthLossOnHittingWallOrGround,
                     NewHeroData = HeroData#{strength => NewStrength},
                     NewGame = {game, GameData#{
                         hero => {hero, NewHeroData},
@@ -117,7 +124,7 @@ move({game, GameData} = _Game, Command, {IsEmptyOrt1, IsEmptyOrt2}) ->
     NewStrength = case maze:is_empty(Maze, NewX, NewY) of
         false ->
             %% Don't hit the wall - you'll hurt yourself!
-            Strength - ?StrengthLossOnHittingWall;
+            Strength - ?StrengthLossOnHittingWallOrGround;
         true ->
             %% Running around saps energy...
             case rand:uniform(?ReciprocalStrengthLossOnMove) of
