@@ -23,10 +23,12 @@ play() ->
     console:clear_screen(),
     console:welcome(),
     console:draw_board(Game),
+    
     play(Game).
 
 play({game, GameData} = Game) ->
     {hero, HeroData} = maps:get(hero, GameData),
+    {stats, StatsData} = maps:get(stats, GameData),
 
     console:draw_info(Game),
     {Command, Running} = console:get_command(Game),
@@ -49,11 +51,22 @@ play({game, GameData} = Game) ->
                         maze => NewMaze,
                         hero => NewHero
                     }},
+
                     console:clear_screen(),
                     console:draw_board(NewGame),
+
                     play(NewGame);
                 false ->
-                    play(Game)
+                    NewStrength = maps:get(strength, HeroData) - 1,
+                    NewHeroData = HeroData#{strength => NewStrength},
+                    NewGame = {game, GameData#{
+                        hero => {hero, NewHeroData},
+                        stats => {stats, StatsData#{
+                            turn => maps:get(turn, StatsData) + 1
+                        }}
+                    }},
+            
+                    play(NewGame)
             end;
         _ ->
             NewHero = {hero, HeroData#{running => Running}},
@@ -183,7 +196,7 @@ deltas_to_direction(DeltaX, DeltaY) ->
 
 %% Stop running when:
 %% - the next cell in the current direction is not empty,
-%% - the next cell is next to a door,
+%% - the cell is next to a door,
 %% - the corridor gets wider (from its narrowest point during the current run).
 stop_running(Maze, X, Y, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2) ->
     {NextX, NextY} = {X + DeltaX, Y + DeltaY},
