@@ -43,8 +43,9 @@ draw_info({game, GameData} = _Game) ->
     {stats, StatsData} = maps:get(stats, GameData),
     
     goto_xy(0, ?InfoRow),
-    io:format("Turn: ~p Strength: ~p", [
+    io:format("Turn: ~p Level: ~p Strength: ~p", [
         maps:get(turn, StatsData),
+        maps:get(level, HeroData),
         maps:get(strength, HeroData)]),
     clear_eol().
 

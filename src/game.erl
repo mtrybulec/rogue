@@ -46,8 +46,9 @@ play({game, GameData} = Game) ->
             case maze:is_stairs(Maze, X, Y) of
                 true ->
                     NewMaze = maze:generate_maze(is_last_level()),
-                    {hero, NewHeroData} = hero:initialize_hero(NewMaze),
-                    Strength = maps:get(strength, NewHeroData),
+                    Position = hero:initialize_hero_position(NewMaze),
+                    Level = maps:get(level, HeroData),
+                    Strength = maps:get(strength, HeroData),
                     NewStrength = case rand:uniform(?ReciprocalStrengthLossOnMove) of
                         1 ->
                             Strength - 1;
@@ -56,7 +57,10 @@ play({game, GameData} = Game) ->
                     end,
                     NewGame = {game, GameData#{
                         maze => NewMaze,
-                        hero => {hero, NewHeroData#{strength => NewStrength}},
+                        hero => {hero, HeroData#{
+                            level => Level + 1,
+                            position => Position,
+                            strength => NewStrength}},
                         stats => {stats, StatsData#{
                             turn => maps:get(turn, StatsData) + 1
                         }}
