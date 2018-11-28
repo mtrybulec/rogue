@@ -49,7 +49,10 @@ play({game, GameData} = Game) ->
                     NewHero = hero:initialize_hero(NewMaze),
                     NewGame = {game, GameData#{
                         maze => NewMaze,
-                        hero => NewHero
+                        hero => NewHero,
+                        stats => {stats, StatsData#{
+                            turn => maps:get(turn, StatsData) + 1
+                        }}
                     }},
 
                     console:clear_screen(),
