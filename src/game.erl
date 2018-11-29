@@ -30,71 +30,71 @@ play() ->
 
 play({game, GameData} = Game) ->
     {hero, HeroData} = maps:get(hero, GameData),
-    {stats, StatsData} = maps:get(stats, GameData),
-
-    console:draw_info(Game),
-    {Command, Running} = console:get_command(Game),
-
-    case Command of
-        command_restart ->
-            play();
-        command_quit ->
-            console:quit(),
-            quit;
-        take_stairs ->
-            Maze = maps:get(maze, GameData),
-            {X, Y} = maps:get(position, HeroData),
-
-            case maze:is_stairs(Maze, X, Y) of
-                true ->
-                    Level = maps:get(level, HeroData),
-                    NewLevel = Level + 1,
-                    NewMaze = maze:generate_maze(is_last_level(NewLevel)),
-                    Position = hero:initialize_hero_position(NewMaze),
-                    Strength = maps:get(strength, HeroData),
-                    NewStrength = case rand:uniform(?ReciprocalStrengthLossOnMove) of
-                        1 ->
-                            Strength - 1;
-                        _ ->
-                            Strength
-                    end,
-                    NewGame = {game, GameData#{
-                        maze => NewMaze,
-                        hero => {hero, HeroData#{
-                            level => NewLevel,
-                            position => Position,
-                            strength => NewStrength}},
-                        stats => {stats, StatsData#{
-                            turn => maps:get(turn, StatsData) + 1
-                        }}
-                    }},
-
-                    console:clear_screen(),
-                    console:draw_board(NewGame),
-
-                    play(NewGame);
-                false ->
-                    NewStrength = maps:get(strength, HeroData) - ?StrengthLossOnHittingWallOrGround,
-                    NewHeroData = HeroData#{strength => NewStrength},
-                    NewGame = {game, GameData#{
-                        hero => {hero, NewHeroData},
-                        stats => {stats, StatsData#{
-                            turn => maps:get(turn, StatsData) + 1
-                        }}
-                    }},
+    Strength = maps:get(strength, HeroData),
+    
+    case Strength =< 0 of
+        true ->
+            console:dead(Game),
+            rip;
+        false ->
+            console:draw_info(Game),
+            {Command, Running} = console:get_command(Game),
+    
+            case Command of
+                command_restart ->
+                    play();
+                command_quit ->
+                    console:quit(),
+                    quit;
+                take_stairs ->
+                    {stats, StatsData} = maps:get(stats, GameData),
+                    Maze = maps:get(maze, GameData),
+                    {X, Y} = maps:get(position, HeroData),
             
-                    play(NewGame)
-            end;
-        _ ->
-            NewHero = {hero, HeroData#{running => Running}},
-            NewGame = {game, GameData#{hero => NewHero}},
-
-            GameAfterMove = move(NewGame, Command, undefined),
-
-            case GameAfterMove of
-                rip ->
-                    rip;
+                    case maze:is_stairs(Maze, X, Y) of
+                        true ->
+                            Level = maps:get(level, HeroData),
+                            NewLevel = Level + 1,
+                            NewMaze = maze:generate_maze(is_last_level(NewLevel)),
+                            Position = hero:initialize_hero_position(NewMaze),
+                            NewStrength = case rand:uniform(?ReciprocalStrengthLossOnMove) of
+                                1 ->
+                                    Strength - 1;
+                                _ ->
+                                    Strength
+                            end,
+                            NewGame = {game, GameData#{
+                                maze => NewMaze,
+                                hero => {hero, HeroData#{
+                                    level => NewLevel,
+                                    position => Position,
+                                    strength => NewStrength}},
+                                stats => {stats, StatsData#{
+                                    turn => maps:get(turn, StatsData) + 1
+                                }}
+                            }},
+                    
+                            console:clear_screen(),
+                            console:draw_board(NewGame),
+                    
+                            play(NewGame);
+                        false ->
+                            NewStrength = maps:get(strength, HeroData) - ?StrengthLossOnHittingWallOrGround,
+                            NewHeroData = HeroData#{strength => NewStrength},
+                            NewGame = {game, GameData#{
+                                hero => {hero, NewHeroData},
+                                stats => {stats, StatsData#{
+                                    turn => maps:get(turn, StatsData) + 1
+                                }}
+                            }},
+                    
+                            play(NewGame)
+                    end;
                 _ ->
+                    NewHero = {hero, HeroData#{running => Running}},
+                    NewGame = {game, GameData#{hero => NewHero}},
+            
+                    GameAfterMove = move(NewGame, Command, undefined),
                     play(GameAfterMove)
             end
     end.
@@ -155,8 +155,8 @@ move({game, GameData} = _Game, Command, {IsEmptyOrt1, IsEmptyOrt2}) ->
     
     case NewStrength of
         0 ->
-            console:dead(NewGame),
-            rip;
+            StopRunningHeroData = NewHeroData#{running => false},
+            {game, GameData#{hero => {hero, StopRunningHeroData}}};
         _ ->
             console:move(Maze, {X, Y}, NewPosition),
             case maps:get(running, HeroData) of
