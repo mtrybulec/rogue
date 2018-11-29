@@ -1,2 +1,3 @@
+-define(LevelCount, 3).
 -define(ReciprocalStrengthLossOnMove, 10).
 -define(StrengthLossOnHittingWallOrGround, 1).

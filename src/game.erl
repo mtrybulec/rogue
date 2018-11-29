@@ -6,11 +6,11 @@
 
 -include("game.hrl").
 
-is_last_level() ->
-    false.
+is_last_level(Level) ->
+    Level >= ?LevelCount.
 
 play() ->
-    Maze = maze:generate_maze(is_last_level()),
+    Maze = maze:generate_maze(is_last_level(1)),
     Hero = hero:initialize_hero(Maze),
     Game = {game, #{
         maze => Maze,
@@ -45,9 +45,10 @@ play({game, GameData} = Game) ->
 
             case maze:is_stairs(Maze, X, Y) of
                 true ->
-                    NewMaze = maze:generate_maze(is_last_level()),
-                    Position = hero:initialize_hero_position(NewMaze),
                     Level = maps:get(level, HeroData),
+                    NewLevel = Level + 1,
+                    NewMaze = maze:generate_maze(is_last_level(NewLevel)),
+                    Position = hero:initialize_hero_position(NewMaze),
                     Strength = maps:get(strength, HeroData),
                     NewStrength = case rand:uniform(?ReciprocalStrengthLossOnMove) of
                         1 ->
@@ -58,7 +59,7 @@ play({game, GameData} = Game) ->
                     NewGame = {game, GameData#{
                         maze => NewMaze,
                         hero => {hero, HeroData#{
-                            level => Level + 1,
+                            level => NewLevel,
                             position => Position,
                             strength => NewStrength}},
                         stats => {stats, StatsData#{
