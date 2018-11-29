@@ -135,8 +135,8 @@ move({game, GameData} = _Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
             %% Don't hit the wall - you'll hurt yourself!
             Strength - ?StrengthLossOnHittingWallOrGround;
         true ->
-            %% Running around saps energy...
-            case rand:uniform(?ReciprocalStrengthLossOnMove) of
+            %% Walking around saps energy; running even more so...
+            case rand:uniform(?ReciprocalStrengthLossOnMove div (util:boolean_to_integer(Running) + 1)) of
                 1 ->
                     Strength - 1;
                 _ ->

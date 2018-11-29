@@ -2,6 +2,7 @@
 
 -export([
     is_shell/0,
+    boolean_to_integer/1,
     sign/1,
     generate_delta/1
 ]).
@@ -13,6 +14,11 @@ is_shell() ->
         error ->
             true
     end.
+
+boolean_to_integer(true) ->
+    1;
+boolean_to_integer(false) ->
+    0.
 
 sign(X) when X < 0 ->
     -1;
