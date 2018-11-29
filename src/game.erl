@@ -58,6 +58,9 @@ play({game, GameData} = Game) ->
 take_stairs({game, GameData}) ->
     {hero, HeroData} = maps:get(hero, GameData),
     {stats, StatsData} = maps:get(stats, GameData),
+    NewStats = {stats, StatsData#{
+        turn => maps:get(turn, StatsData) + 1
+    }},
     Maze = maps:get(maze, GameData),
     {X, Y} = maps:get(position, HeroData),
     Strength = maps:get(strength, HeroData),
@@ -80,9 +83,7 @@ take_stairs({game, GameData}) ->
                     level => NewLevel,
                     position => Position,
                     strength => NewStrength}},
-                stats => {stats, StatsData#{
-                    turn => maps:get(turn, StatsData) + 1
-                }}
+                stats => NewStats
             }},
             
             console:clear_screen(),
@@ -90,14 +91,12 @@ take_stairs({game, GameData}) ->
             
             NewGame;
         false ->
-            NewStrength = maps:get(strength, HeroData) - ?StrengthLossOnHittingWallOrGround,
+            NewStrength = Strength - ?StrengthLossOnHittingWallOrGround,
             NewHeroData = HeroData#{strength => NewStrength},
             
             {game, GameData#{
                 hero => {hero, NewHeroData},
-                stats => {stats, StatsData#{
-                    turn => maps:get(turn, StatsData) + 1
-                }}
+                stats => NewStats
             }}
     end.
 
