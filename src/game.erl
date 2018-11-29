@@ -4,7 +4,9 @@
     play/0
 ]).
 
--include("game.hrl").
+-define(LevelCount, 3).
+-define(ReciprocalStrengthLossOnMove, 10).
+-define(StrengthLossOnHittingWallOrGround, 1).
 
 is_last_level(Level) ->
     Level >= ?LevelCount.

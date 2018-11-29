@@ -6,7 +6,8 @@
 ]).
 
 -include("board.hrl").
--include("hero.hrl").
+
+-define(InitialStrength, 100).
 
 initialize_hero_position(Maze) ->
     X = rand:uniform(?BoardWidth),

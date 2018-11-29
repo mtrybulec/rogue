@@ -1,1 +1,0 @@
--define(InitialStrength, 100).

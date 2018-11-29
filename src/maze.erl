@@ -9,7 +9,15 @@
 ]).
 
 -include("board.hrl").
--include("maze.hrl").
+
+-define(MazeComplexity, 10).
+-define(MaxRoomWidth, 30).
+-define(MinRoomWidth, 3).
+-define(MaxRoomHeight, 10).
+-define(MinRoomHeight, 3).
+-define(MaxCorridorSegmentCount, 10).
+-define(MaxCorridorSegmentLength, 10).
+-define(ReciprocalDeadEnd, 5).
 
 generate_maze(IsLastLevel) ->
     FirstRoom = [generate_room()],

@@ -16,7 +16,22 @@
     quit/0
 ]).
 
--include("console.hrl").
+-include("board.hrl").
+
+-define(Name, "Rogue").
+-define(Treasure, "The Thingamajig").
+
+-define(InfoRow, ?BoardHeight + 1).
+-define(CommandRow, ?InfoRow + 1).
+-define(MessageRow, ?CommandRow + 1).
+
+-define(EmptyChar, ".").
+-define(StairsChar, "=").
+-define(HorizWallChar, "-").
+-define(VertWallChar, "|").
+-define(CornerChar, "+").
+-define(DoorChar, "#").
+-define(HeroChar, "@").
 
 %% For tty control escape sequences, see
 %% http://ascii-table.com/ansi-escape-sequences.phphttp://ascii-table.com/ansi-escape-sequences.php
