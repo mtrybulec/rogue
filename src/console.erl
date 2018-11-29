@@ -18,7 +18,7 @@
 
 -include("board.hrl").
 
--define(Name, "Rogue").
+-define(Name, "Yarlg").
 -define(Treasure, "The Thingamajig").
 
 -define(InfoRow, ?BoardHeight + 1).
