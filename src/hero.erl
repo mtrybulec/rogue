@@ -24,6 +24,5 @@ initialize_hero(Maze) ->
     {hero, #{
         level => 1,
         position => initialize_hero_position(Maze),
-        running => false,
         strength => ?InitialStrength
     }}.

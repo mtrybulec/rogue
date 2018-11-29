@@ -50,12 +50,8 @@ play({game, GameData} = Game) ->
                     NewGame = take_stairs(Game),
                     play(NewGame);
                 _ ->
-                    {hero, HeroData} = maps:get(hero, GameData),
-                    NewHero = {hero, HeroData#{running => Running}},
-                    NewGame = {game, GameData#{hero => NewHero}},
-            
-                    GameAfterMove = move(NewGame, Command, undefined),
-                    play(GameAfterMove)
+                    NewGame = move(Game, Command, Running, undefined),
+                    play(NewGame)
             end
     end.
 
@@ -105,7 +101,7 @@ take_stairs({game, GameData}) ->
             }}
     end.
 
-move({game, GameData} = Game, Command, undefined) ->
+move({game, GameData} = Game, Command, Running, undefined) ->
     Maze = maps:get(maze, GameData),
     {hero, HeroData} = maps:get(hero, GameData),
     {X, Y} = maps:get(position, HeroData),
@@ -113,8 +109,8 @@ move({game, GameData} = Game, Command, undefined) ->
     IsEmptyOrt1 = maze:is_empty(Maze, X + DeltaY, Y + DeltaX),
     IsEmptyOrt2 = maze:is_empty(Maze, X - DeltaY, Y - DeltaX),
     
-    move(Game, Command, {IsEmptyOrt1, IsEmptyOrt2});
-move({game, GameData} = _Game, Command, {IsEmptyOrt1, IsEmptyOrt2}) ->
+    move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2});
+move({game, GameData} = _Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     Hero = maps:get(hero, GameData),
     Maze = maps:get(maze, GameData),
     
@@ -161,30 +157,28 @@ move({game, GameData} = _Game, Command, {IsEmptyOrt1, IsEmptyOrt2}) ->
     
     case NewStrength of
         0 ->
-            StopRunningHeroData = NewHeroData#{running => false},
-            {game, GameData#{hero => {hero, StopRunningHeroData}}};
+            NewGame;
         _ ->
             console:move(Maze, {X, Y}, NewPosition),
-            case maps:get(running, HeroData) of
+            case Running of
                 true ->
                     {StopRunning, NewIsEmptyOrt1, NewIsEmptyOrt2} =
                         stop_running(Maze, NewX, NewY, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
                     case StopRunning of
                         false ->
-                            move(NewGame, Command, {NewIsEmptyOrt1, NewIsEmptyOrt2});
+                            move(NewGame, Command, true, {NewIsEmptyOrt1, NewIsEmptyOrt2});
                         true ->
                             case restart_running_after_turn(Maze, NewX, NewY, DeltaX, DeltaY, 1) of
                                 true ->
                                     NewCommand = deltas_to_direction(DeltaY, DeltaX),
-                                    move(NewGame, NewCommand, undefined);
+                                    move(NewGame, NewCommand, true, undefined);
                                 false ->
                                     case restart_running_after_turn(Maze, NewX, NewY, DeltaX, DeltaY, -1) of
                                         true ->
                                             NewCommand = deltas_to_direction(-DeltaY, -DeltaX),
-                                            move(NewGame, NewCommand, undefined);
+                                            move(NewGame, NewCommand, true, undefined);
                                         false ->
-                                            StopRunningHeroData = NewHeroData#{running => false},
-                                            {game, GameData#{hero => {hero, StopRunningHeroData}}}
+                                            NewGame
                                     end
                             end
                     end;
