@@ -8,7 +8,8 @@
     is_wall/3,
     is_door/3,
     is_stairs/3,
-    is_item/3
+    is_item/3,
+    is_monster/3
 ]).
 
 -include("board.hrl").
@@ -260,6 +261,13 @@ is_item([{item, {X, Y}, _} | _T], X, Y) ->
 is_item([_H | T], X, Y) ->
     is_item(T, X, Y);
 is_item([], _X, _Y) ->
+    false.
+
+is_monster([{monster, {X, Y}, _} | _T], X, Y) ->
+    true;
+is_monster([_H | T], X, Y) ->
+    is_monster(T, X, Y);
+is_monster([], _X, _Y) ->
     false.
 
 is_edge(X, Y) when

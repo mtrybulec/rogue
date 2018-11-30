@@ -266,7 +266,8 @@ deltas_to_direction(DeltaX, DeltaY) ->
 is_of_interest(Maze, X, Y) ->
     maze:is_door(Maze, X, Y) orelse
     maze:is_stairs(Maze, X, Y) orelse
-    maze:is_item(Maze, X, Y).
+    maze:is_item(Maze, X, Y) orelse
+    maze:is_monster(Maze, X, Y).
 
 %% Stop running when:
 %% - the next cell in the current direction is not empty,
