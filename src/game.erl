@@ -29,15 +29,15 @@ play() ->
     play(Game).
 
 play(Game) ->
-    {hero, HeroData} = maps:get(hero, Game),
-    Items = maps:get(items, HeroData),
+    Hero = maps:get(hero, Game),
+    Items = maps:get(items, Hero),
     
     case lists:any(fun(Item) -> Item == treasure end, Items) of
         true ->
             console:done(),
             done;
         false ->
-            Strength = maps:get(strength, HeroData),
+            Strength = maps:get(strength, Hero),
     
             case Strength =< 0 of
                 true ->
@@ -67,18 +67,18 @@ play(Game) ->
     end.
 
 collect_item(Game) ->
-    {hero, HeroData} = maps:get(hero, Game),
+    Hero = maps:get(hero, Game),
     Stats = maps:get(stats, Game),
     NewStats = Stats#{
         turn => maps:get(turn, Stats) + 1
     },
     Maze = maps:get(maze, Game),
-    {X, Y} = maps:get(position, HeroData),
-    Strength = maps:get(strength, HeroData),
+    {X, Y} = maps:get(position, Hero),
+    Strength = maps:get(strength, Hero),
     
     case maze:is_item(Maze, X, Y) of
         true ->
-            Items = maps:get(items, HeroData),
+            Items = maps:get(items, Hero),
             {Item, NewMaze} = maze:remove_item(Maze, X, Y),
     
             NewStrength = case rand:uniform(?ReciprocalStrengthLossOnMove) of
@@ -90,34 +90,35 @@ collect_item(Game) ->
     
             Game#{
                 maze => NewMaze,
-                hero => {hero, HeroData#{
+                hero => Hero#{
                     items => [Item] ++ Items,
-                    strength => NewStrength}},
+                    strength => NewStrength
+                },
                 stats => NewStats
             };
         false ->
             NewStrength = Strength - ?StrengthLossOnHittingWallOrGround,
-            NewHeroData = HeroData#{strength => NewStrength},
+            NewHero = Hero#{strength => NewStrength},
             
             Game#{
-                hero => {hero, NewHeroData},
+                hero => NewHero,
                 stats => NewStats
             }
     end.
 
 take_stairs(Game) ->
-    {hero, HeroData} = maps:get(hero, Game),
+    Hero = maps:get(hero, Game),
     Stats = maps:get(stats, Game),
     NewStats = Stats#{
         turn => maps:get(turn, Stats) + 1
     },
     Maze = maps:get(maze, Game),
-    {X, Y} = maps:get(position, HeroData),
-    Strength = maps:get(strength, HeroData),
+    {X, Y} = maps:get(position, Hero),
+    Strength = maps:get(strength, Hero),
     
     case maze:is_stairs(Maze, X, Y) of
         true ->
-            Level = maps:get(level, HeroData),
+            Level = maps:get(level, Hero),
             NewLevel = Level + 1,
             NewMaze = maze:generate_maze(is_last_level(NewLevel)),
             Position = hero:initialize_hero_position(NewMaze),
@@ -131,10 +132,11 @@ take_stairs(Game) ->
             
             NewGame = Game#{
                 maze => NewMaze,
-                hero => {hero, HeroData#{
+                hero => Hero#{
                     level => NewLevel,
                     position => Position,
-                    strength => NewStrength}},
+                    strength => NewStrength
+                },
                 stats => NewStats
             },
             
@@ -144,18 +146,18 @@ take_stairs(Game) ->
             NewGame;
         false ->
             NewStrength = Strength - ?StrengthLossOnHittingWallOrGround,
-            NewHeroData = HeroData#{strength => NewStrength},
+            NewHero = Hero#{strength => NewStrength},
             
             Game#{
-                hero => {hero, NewHeroData},
+                hero => NewHero,
                 stats => NewStats
             }
     end.
 
 move(Game, Command, Running, undefined) ->
     Maze = maps:get(maze, Game),
-    {hero, HeroData} = maps:get(hero, Game),
-    {X, Y} = maps:get(position, HeroData),
+    Hero = maps:get(hero, Game),
+    {X, Y} = maps:get(position, Hero),
     {DeltaX, DeltaY} = direction_to_deltas(Command),
     IsEmptyOrt1 = maze:is_empty(Maze, X + DeltaY, Y + DeltaX),
     IsEmptyOrt2 = maze:is_empty(Maze, X - DeltaY, Y - DeltaX),
@@ -165,9 +167,8 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     Hero = maps:get(hero, Game),
     Maze = maps:get(maze, Game),
     
-    {hero, HeroData} = Hero,
-    {X, Y} = maps:get(position, HeroData),
-    Strength = maps:get(strength, HeroData),
+    {X, Y} = maps:get(position, Hero),
+    Strength = maps:get(strength, Hero),
 
     Stats = maps:get(stats, Game),
     
@@ -195,12 +196,12 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
             end
     end,
     
-    NewHeroData = HeroData#{
+    NewHero = Hero#{
         position => NewPosition,
         strength => NewStrength
     },
     NewGame = Game#{
-        hero => {hero, NewHeroData},
+        hero => NewHero,
         stats => Stats#{
             turn => maps:get(turn, Stats) + 1
         }

@@ -56,14 +56,14 @@ draw_board(Game) ->
     draw_info(Game).
 
 draw_info(Game) ->
-    {hero, HeroData} = maps:get(hero, Game),
+    Hero = maps:get(hero, Game),
     Stats = maps:get(stats, Game),
     
     goto_xy(0, ?InfoRow),
     io:format("Turn: ~p Level: ~p Strength: ~p", [
         maps:get(turn, Stats),
-        maps:get(level, HeroData),
-        maps:get(strength, HeroData)]),
+        maps:get(level, Hero),
+        maps:get(strength, Hero)]),
     clear_eol().
 
 draw_maze(Maze) ->
@@ -149,8 +149,8 @@ draw_items([_ | T]) ->
 draw_items([]) ->
     ok.
 
-draw_hero({hero, Data} = _Hero) ->
-    goto_xy(maps:get(position, Data)),
+draw_hero(Hero) ->
+    goto_xy(maps:get(position, Hero)),
     io:format(?HeroChar).
 
 move(_Maze, {X, Y}, {X, Y}) ->
@@ -299,8 +299,8 @@ debug(Game) ->
     draw_board(Game).
 
 hoard(Game) ->
-    {hero, HeroData} = maps:get(hero, Game),
-    Items = maps:get(items, HeroData),
+    Hero = maps:get(hero, Game),
+    Items = maps:get(items, Hero),
     
     case Items of
         [] ->
