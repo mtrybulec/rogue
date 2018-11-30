@@ -22,6 +22,7 @@ initialize_hero_position(Maze) ->
 
 initialize_hero(Maze) ->
     {hero, #{
+        items => [],
         level => 1,
         position => initialize_hero_position(Maze),
         strength => ?InitialStrength

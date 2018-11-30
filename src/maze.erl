@@ -2,6 +2,7 @@
 
 -export([
     generate_maze/1,
+    remove_item/3,
     is_empty/3,
     is_wall/3,
     is_door/3,
@@ -180,6 +181,16 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
             %% DeltaX/Y are substituted intentionally to switch direction to a perpendicular one:
             [Segment] ++ generate_corridor([Segment] ++ Maze, EndX, EndY, DeltaY * DeltaChange, DeltaX * DeltaChange, SegmentCount - 1)
     end.
+
+remove_item(Maze, X, Y) ->
+    remove_item(Maze, X, Y, {undefined, []}).
+
+remove_item([{item, {PosX, PosY}, Item} | T], PosX, PosY, {undefined, NewMaze}) ->
+    {Item, T ++ NewMaze};
+remove_item([H | T], PosX, PosY, {undefined, NewMaze}) ->
+    remove_item(T, PosX, PosY, {undefined, [H] ++ NewMaze});
+remove_item([], _X, _Y, Result) ->
+    Result.
 
 is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
     X1 < PosX, Y1 < PosY, X2 > PosX, Y2 > PosY ->

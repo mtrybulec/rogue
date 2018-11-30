@@ -194,6 +194,8 @@ get_command(Game) ->
     CommandChar = get_command_char(),
     clear_message(),
     Command = case string:to_lower(CommandChar) of
+        "c" ->
+            collect_item;
         "d" ->
             command_debug;
         "r" ->
@@ -253,6 +255,7 @@ help(Game) ->
     io:format("k - go South~n"),
     io:format("j - go West~n"),
     io:format("l - go East~n"),
+    io:format("c - collect item~n"),
     io:format("t - take the stairs~n"),
     io:format("q - quit~n"),
     io:format("~n"),

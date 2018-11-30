@@ -46,6 +46,9 @@ play({game, GameData} = Game) ->
                 command_quit ->
                     console:quit(),
                     quit;
+                collect_item ->
+                    NewGame = collect_item(Game),
+                    play(NewGame);
                 take_stairs ->
                     NewGame = take_stairs(Game),
                     play(NewGame);
@@ -53,6 +56,45 @@ play({game, GameData} = Game) ->
                     NewGame = move(Game, Command, Running, undefined),
                     play(NewGame)
             end
+    end.
+
+collect_item({game, GameData}) ->
+    {hero, HeroData} = maps:get(hero, GameData),
+    {stats, StatsData} = maps:get(stats, GameData),
+    NewStats = {stats, StatsData#{
+        turn => maps:get(turn, StatsData) + 1
+    }},
+    Maze = maps:get(maze, GameData),
+    {X, Y} = maps:get(position, HeroData),
+    Strength = maps:get(strength, HeroData),
+    
+    case maze:is_item(Maze, X, Y) of
+        true ->
+            Items = maps:get(items, HeroData),
+            {Item, NewMaze} = maze:remove_item(Maze, X, Y),
+    
+            NewStrength = case rand:uniform(?ReciprocalStrengthLossOnMove) of
+                1 ->
+                    Strength - 1;
+                _ ->
+                    Strength
+            end,
+    
+            {game, GameData#{
+                maze => NewMaze,
+                hero => {hero, HeroData#{
+                    items => [Item] ++Items,
+                    strength => NewStrength}},
+                stats => NewStats
+            }};
+        false ->
+            NewStrength = Strength - ?StrengthLossOnHittingWallOrGround,
+            NewHeroData = HeroData#{strength => NewStrength},
+            
+            {game, GameData#{
+                hero => {hero, NewHeroData},
+                stats => NewStats
+            }}
     end.
 
 take_stairs({game, GameData}) ->
