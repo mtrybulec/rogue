@@ -269,24 +269,14 @@ overlaps({{X1, Y1}, {X2, Y2}}, {{X3, Y3}, {X4, Y4}}) ->
         min(Y1, Y2) > max(Y3, Y4)).
 
 room_overlaps([{_, {{_X1, _Y1}, {_X2, _Y2}} = Coords1} | T], {room, Coords2} = Room) ->
-    case overlaps(Coords1, Coords2) of
-        false ->
-            room_overlaps(T, Room);
-        true ->
-            true
-    end;
+    overlaps(Coords1, Coords2) orelse room_overlaps(T, Room);
 room_overlaps([_H | T], Room) ->
     room_overlaps(T, Room);
 room_overlaps([], _Room) ->
     false.
 
 overlaps_rooms([{room, Coords1} | T], {corridor, Coords2} = Corridor) ->
-    case overlaps(Coords1, Coords2) of
-        false ->
-            overlaps_rooms(T, Corridor);
-        true ->
-            true
-    end;
+    overlaps(Coords1, Coords2) orelse overlaps_rooms(T, Corridor);
 overlaps_rooms([_H | T], Corridor) ->
     overlaps_rooms(T, Corridor);
 overlaps_rooms([], _Corridor) ->
