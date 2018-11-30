@@ -4,6 +4,7 @@
     generate_empty_point/1,
     generate_maze/1,
     remove_item/3,
+    remove_monster/3,
     is_empty/3,
     is_wall/3,
     is_door/3,
@@ -22,6 +23,7 @@
 -define(MaxCorridorSegmentCount, 10).
 -define(MaxCorridorSegmentLength, 10).
 -define(ReciprocalDeadEnd, 5).
+-define(MonsterStrength, 10).
 
 generate_empty_point(Maze) ->
     {X, Y} = board:generate_point(),
@@ -194,7 +196,7 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
 
 generate_monsters(Maze) ->
     {X, Y} = maze:generate_empty_point(Maze),
-    [{monster, {X, Y}, orc}] ++ Maze.
+    [{monster, {X, Y}, {orc, rand:uniform(?MonsterStrength)}}] ++ Maze.
 
 remove_item(Maze, X, Y) ->
     remove_item(Maze, X, Y, {undefined, []}).
@@ -204,6 +206,16 @@ remove_item([{item, {X, Y}, Item} | T], X, Y, {undefined, NewMaze}) ->
 remove_item([H | T], X, Y, {undefined, NewMaze}) ->
     remove_item(T, X, Y, {undefined, [H] ++ NewMaze});
 remove_item([], _X, _Y, Result) ->
+    Result.
+
+remove_monster(Maze, X, Y) ->
+    remove_monster(Maze, X, Y, {undefined, []}).
+
+remove_monster([{monster, {X, Y}, Monster} | T], X, Y, {undefined, NewMaze}) ->
+    {Monster, T ++ NewMaze};
+remove_monster([H | T], X, Y, {undefined, NewMaze}) ->
+    remove_monster(T, X, Y, {undefined, [H] ++ NewMaze});
+remove_monster([], _X, _Y, Result) ->
     Result.
 
 is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], X, Y) when

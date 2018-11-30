@@ -150,7 +150,7 @@ draw_items([_ | T]) ->
 draw_items([]) ->
     ok.
 
-draw_monsters([{monster, {X, Y}, Monster} | _T]) ->
+draw_monsters([{monster, {X, Y}, {Monster, _Strength}} | _T]) ->
     goto_xy(X, Y),
     MonsterChar = case Monster of
         orc ->

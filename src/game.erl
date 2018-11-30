@@ -7,6 +7,8 @@
 -define(LevelCount, 3).
 -define(ReciprocalStrengthLossOnMove, 10).
 -define(StrengthLossOnInvalidCommand, 1).
+-define(StrengthLossOnHit, 1).
+-define(HitStrength, 6).
 
 is_last_level(Level) ->
     Level >= ?LevelCount.
@@ -183,23 +185,40 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     
     Strength = maps:get(strength, Hero),
 
-    NewStrength = case maze:is_empty(Maze, NewX, NewY) of
+    {NewStrength, NewMaze, NewRunning} = case maze:is_empty(Maze, NewX, NewY) of
         false ->
-            %% Don't hit the wall - you'll hurt yourself!
-            Strength - ?StrengthLossOnInvalidCommand;
+            case maze:is_monster(Maze, NewX, NewY) of
+                true ->
+                    {Monster, MazeNoMonster} = maze:remove_monster(Maze, NewX, NewY),
+                    {MonsterType, MonsterStrength} = Monster,
+                    MonsterStrengthAfterHit = MonsterStrength - rand:uniform(?HitStrength) - rand:uniform(?HitStrength),
+                   
+                    MazeAfterHit = case MonsterStrengthAfterHit =< 0 of
+                        true ->
+                            MazeNoMonster;
+                        false ->
+                            [{monster, {NewX, NewY}, {MonsterType, MonsterStrengthAfterHit}}] ++ MazeNoMonster
+                    end,
+
+                    {Strength - ?StrengthLossOnHit, MazeAfterHit, false};
+                false ->
+                    %% Don't hit the wall - you'll hurt yourself!
+                    {Strength - ?StrengthLossOnInvalidCommand, Maze, false}
+            end;
         true ->
-            %% Walking around saps energy; running even more so...
-            case rand:uniform(?ReciprocalStrengthLossOnMove div (util:boolean_to_integer(Running) + 1)) of
+            %% Walking around saps energy; running - even more so...
+            StrengthAfterMove = case rand:uniform(?ReciprocalStrengthLossOnMove div (util:boolean_to_integer(Running) + 1)) of
                 1 ->
                     Strength - 1;
                 _ ->
                     Strength
-            end
+            end,
+            
+            {StrengthAfterMove, Maze, Running}
     end,
     
-    Stats = maps:get(stats, Game),
-    
     NewGame = Game#{
+        maze => NewMaze,
         hero => Hero#{
             position => NewPosition,
             strength => NewStrength
@@ -212,7 +231,7 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
             NewGame;
         _ ->
             console:move(Maze, {X, Y}, NewPosition),
-            case Running of
+            case NewRunning of
                 true ->
                     {StopRunning, NewIsEmptyOrt1, NewIsEmptyOrt2} =
                         stop_running(Maze, NewX, NewY, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
