@@ -57,11 +57,11 @@ draw_board(Game) ->
 
 draw_info(Game) ->
     {hero, HeroData} = maps:get(hero, Game),
-    {stats, StatsData} = maps:get(stats, Game),
+    Stats = maps:get(stats, Game),
     
     goto_xy(0, ?InfoRow),
     io:format("Turn: ~p Level: ~p Strength: ~p", [
-        maps:get(turn, StatsData),
+        maps:get(turn, Stats),
         maps:get(level, HeroData),
         maps:get(strength, HeroData)]),
     clear_eol().

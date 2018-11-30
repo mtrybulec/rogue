@@ -17,9 +17,9 @@ play() ->
     Game = #{
         maze => Maze,
         hero => Hero,
-        stats => {stats, #{
+        stats => #{
             turn => 1
-        }}
+        }
     },
     
     console:clear_screen(),
@@ -68,10 +68,10 @@ play(Game) ->
 
 collect_item(Game) ->
     {hero, HeroData} = maps:get(hero, Game),
-    {stats, StatsData} = maps:get(stats, Game),
-    NewStats = {stats, StatsData#{
-        turn => maps:get(turn, StatsData) + 1
-    }},
+    Stats = maps:get(stats, Game),
+    NewStats = Stats#{
+        turn => maps:get(turn, Stats) + 1
+    },
     Maze = maps:get(maze, Game),
     {X, Y} = maps:get(position, HeroData),
     Strength = maps:get(strength, HeroData),
@@ -107,10 +107,10 @@ collect_item(Game) ->
 
 take_stairs(Game) ->
     {hero, HeroData} = maps:get(hero, Game),
-    {stats, StatsData} = maps:get(stats, Game),
-    NewStats = {stats, StatsData#{
-        turn => maps:get(turn, StatsData) + 1
-    }},
+    Stats = maps:get(stats, Game),
+    NewStats = Stats#{
+        turn => maps:get(turn, Stats) + 1
+    },
     Maze = maps:get(maze, Game),
     {X, Y} = maps:get(position, HeroData),
     Strength = maps:get(strength, HeroData),
@@ -169,7 +169,7 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     {X, Y} = maps:get(position, HeroData),
     Strength = maps:get(strength, HeroData),
 
-    {stats, StatsData} = maps:get(stats, Game),
+    Stats = maps:get(stats, Game),
     
     {DeltaX, DeltaY} = direction_to_deltas(Command),
     {NewX, NewY} = {X + DeltaX, Y + DeltaY},
@@ -201,9 +201,9 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     },
     NewGame = Game#{
         hero => {hero, NewHeroData},
-        stats => {stats, StatsData#{
-            turn => maps:get(turn, StatsData) + 1
-        }}
+        stats => Stats#{
+            turn => maps:get(turn, Stats) + 1
+        }
     },
     
     case NewStrength of
