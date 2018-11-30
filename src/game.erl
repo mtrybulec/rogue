@@ -195,6 +195,7 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
                    
                     MazeAfterHit = case MonsterStrengthAfterHit =< 0 of
                         true ->
+                            console:update(MazeNoMonster, NewX, NewY),
                             MazeNoMonster;
                         false ->
                             [{monster, {NewX, NewY}, {MonsterType, MonsterStrengthAfterHit}}] ++ MazeNoMonster

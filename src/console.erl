@@ -8,6 +8,7 @@
 
     draw_board/1,
     draw_info/1,
+    update/3,
     move/3,
     get_command/1,
     
@@ -166,26 +167,29 @@ draw_hero(Hero) ->
     goto_xy(maps:get(position, Hero)),
     io:format(?HeroChar).
 
-move(_Maze, {X, Y}, {X, Y}) ->
-    ok;
-move(Maze, {OldX, OldY}, {NewX, NewY}) ->
-    goto_xy(OldX, OldY),
-    case maze:is_door(Maze, OldX, OldY) of
+update(Maze, X, Y) ->
+    goto_xy(X, Y),
+    case maze:is_door(Maze, X, Y) of
         true ->
             io:format(?DoorChar);
         false ->
-            case maze:is_stairs(Maze, OldX, OldY) of
+            case maze:is_stairs(Maze, X, Y) of
                 true ->
                     io:format(?StairsChar);
                 false ->
-                    case maze:is_item(Maze, OldX, OldY) of
+                    case maze:is_item(Maze, X, Y) of
                         true ->
                             io:format(?TreasureChar);
                         false ->
                             io:format(?EmptyChar)
                     end
             end
-    end,
+    end.
+
+move(_Maze, {X, Y}, {X, Y}) ->
+    ok;
+move(Maze, {OldX, OldY}, {NewX, NewY}) ->
+    update(Maze, OldX, OldY),
     goto_xy(NewX, NewY),
     io:format(?HeroChar).
 
