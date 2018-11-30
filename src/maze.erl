@@ -26,19 +26,32 @@ generate_maze(IsLastLevel) ->
 generate_maze(false, Maze, 0) ->
     [generate_stairs(Maze)] ++ Maze;
 generate_maze(true, Maze, 0) ->
-    Maze;
+    [generate_treasure(Maze)] ++ Maze;
 generate_maze(IsLastLevel, Maze, Trials) ->
     generate_maze(IsLastLevel, generate_door(Maze) ++ Maze, Trials - 1).
 
 generate_stairs(Maze) ->
     X = rand:uniform(?BoardWidth),
     Y = rand:uniform(?BoardHeight),
+    
     case maze:is_empty(Maze, X, Y) andalso
         not maze:is_door(Maze, X, Y) of
         true ->
             {stairs, {X, Y}};
         false ->
             generate_stairs(Maze)
+    end.
+
+generate_treasure(Maze) ->
+    X = rand:uniform(?BoardWidth),
+    Y = rand:uniform(?BoardHeight),
+    
+    case maze:is_empty(Maze, X, Y) andalso
+        not maze:is_door(Maze, X, Y) of
+        true ->
+            {item, {X, Y}, treasure};
+        false ->
+            generate_treasure(Maze)
     end.
 
 generate_room_dimensions() -> {
@@ -173,6 +186,8 @@ is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
 is_empty([{door, {PosX, PosY}} | _T], PosX, PosY) ->
     true;
 is_empty([{stairs, {PosX, PosY}} | _T], PosX, PosY) ->
+    true;
+is_empty([{item, {PosX, PosY}, _} | _T], PosX, PosY) ->
     true;
 is_empty([{corridor, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
     X1 =< PosX, Y1 =< PosY, X2 >= PosX, Y2 >= PosY ->

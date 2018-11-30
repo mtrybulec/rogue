@@ -31,6 +31,7 @@
 -define(VertWallChar, "|").
 -define(CornerChar, "+").
 -define(DoorChar, "#").
+-define(TreasureChar, "*").
 -define(HeroChar, "@").
 
 %% For tty control escape sequences, see
@@ -67,6 +68,7 @@ draw_info({game, GameData} = _Game) ->
 draw_maze(Maze) ->
     draw_rooms(Maze),
     draw_passages(Maze),
+    draw_items(Maze),
     draw_stairs(Maze).
 
 draw_rooms([{room, _} = Room | T]) ->
@@ -136,6 +138,14 @@ draw_stairs([{stairs, {X, Y}} | _T]) ->
 draw_stairs([_ | T]) ->
     draw_stairs(T);
 draw_stairs([]) ->
+    ok.
+
+draw_items([{item, {X, Y}, treasure} | _T]) ->
+    goto_xy(X, Y),
+    io:format(?TreasureChar);
+draw_items([_ | T]) ->
+    draw_items(T);
+draw_items([]) ->
     ok.
 
 draw_hero({hero, Data} = _Hero) ->
