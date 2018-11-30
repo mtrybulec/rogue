@@ -1,6 +1,7 @@
 -module(maze).
 
 -export([
+    generate_empty_point/1,
     generate_maze/1,
     remove_item/3,
     is_empty/3,
@@ -21,6 +22,16 @@
 -define(MaxCorridorSegmentLength, 10).
 -define(ReciprocalDeadEnd, 5).
 
+generate_empty_point(Maze) ->
+    {X, Y} = board:generate_point(),
+    
+    case is_empty(Maze, X, Y) of
+        true ->
+            {X, Y};
+        false ->
+            generate_empty_point(Maze)
+    end.
+
 generate_maze(IsLastLevel) ->
     FirstRoom = [generate_room()],
     generate_maze(IsLastLevel, FirstRoom, ?MazeComplexity).
@@ -33,10 +44,9 @@ generate_maze(IsLastLevel, Maze, Trials) ->
     generate_maze(IsLastLevel, generate_door(Maze) ++ Maze, Trials - 1).
 
 generate_stairs(Maze) ->
-    {X, Y} = board:generate_point(),
+    {X, Y} = generate_empty_point(Maze),
     
-    case maze:is_empty(Maze, X, Y) andalso
-        not maze:is_door(Maze, X, Y) of
+    case not maze:is_door(Maze, X, Y) of
         true ->
             {stairs, {X, Y}};
         false ->
@@ -44,10 +54,9 @@ generate_stairs(Maze) ->
     end.
 
 generate_treasure(Maze) ->
-    {X, Y} = board:generate_point(),
+    {X, Y} = generate_empty_point(Maze),
     
-    case maze:is_empty(Maze, X, Y) andalso
-        not maze:is_door(Maze, X, Y) of
+    case not maze:is_door(Maze, X, Y) of
         true ->
             {item, {X, Y}, treasure};
         false ->

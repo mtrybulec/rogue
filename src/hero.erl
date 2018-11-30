@@ -8,14 +8,7 @@
 -define(InitialStrength, 100).
 
 initialize_hero_position(Maze) ->
-    {X, Y} = board:generate_point(),
-    
-    case maze:is_empty(Maze, X, Y) of
-        true ->
-            {X, Y};
-        false ->
-            initialize_hero_position(Maze)
-    end.
+    maze:generate_empty_point(Maze).
 
 initialize_hero(Maze) -> #{
     items => [],
