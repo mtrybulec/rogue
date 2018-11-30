@@ -113,12 +113,14 @@ take_stairs({game, GameData}) ->
             NewLevel = Level + 1,
             NewMaze = maze:generate_maze(is_last_level(NewLevel)),
             Position = hero:initialize_hero_position(NewMaze),
+            
             NewStrength = case rand:uniform(?ReciprocalStrengthLossOnMove) of
                 1 ->
                     Strength - 1;
                 _ ->
                     Strength
             end,
+            
             NewGame = {game, GameData#{
                 maze => NewMaze,
                 hero => {hero, HeroData#{

@@ -196,6 +196,8 @@ get_command(Game) ->
     Command = case string:to_lower(CommandChar) of
         "c" ->
             collect_item;
+        "h" ->
+            show_hoard;
         "d" ->
             command_debug;
         "r" ->
@@ -219,6 +221,9 @@ get_command(Game) ->
     end,
     
     case Command of
+        show_hoard ->
+            hoard(Game),
+            get_command(Game);
         command_debug ->
             debug(Game),
             get_command(Game);
@@ -256,6 +261,7 @@ help(Game) ->
     io:format("j - go West~n"),
     io:format("l - go East~n"),
     io:format("c - collect item~n"),
+    io:format("h - hoard~n"),
     io:format("t - take the stairs~n"),
     io:format("q - quit~n"),
     io:format("~n"),
@@ -267,8 +273,7 @@ help(Game) ->
 
 hint() ->
     clear_message(),
-    io:format("Unknown command; press ? for help."),
-    ok.
+    io:format("Unknown command; press ? for help.").
 
 dead(Game) ->
     draw_info(Game),
@@ -287,6 +292,26 @@ debug(Game) ->
     io:get_chars("Press any key to continue...", 1),
     clear_screen(),
     draw_board(Game).
+
+hoard({game, GameData} = Game) ->
+    {hero, HeroData} = maps:get(hero, GameData),
+    Items = maps:get(items, HeroData),
+    
+    case Items of
+        [] ->
+            clear_message(),
+            io:format("No items in the hoard.");
+        _ ->
+            clear_screen(),
+            goto_xy(0, 0),
+            io:format("Your hoard:~n"),
+            io:format("~n"),
+            lists:foreach(fun(Item) -> io:format("- ~p~n", [Item]) end, Items),
+            flush_io(),
+            io:get_chars("Press any key to continue...", 1),
+            clear_screen(),
+            draw_board(Game)
+    end.
 
 flush_io() ->
     case util:is_shell() of
