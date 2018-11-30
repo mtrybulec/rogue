@@ -48,9 +48,9 @@ play(Game) ->
                     {Command, Running} = console:get_command(Game),
             
                     case Command of
-                        command_restart ->
+                        restart_game ->
                             play();
-                        command_quit ->
+                        quit_game ->
                             console:quit(),
                             quit;
                         collect_item ->
@@ -241,26 +241,26 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
 
 direction_to_deltas(Direction) ->
     case Direction of
-        command_move_up ->
+        move_north ->
             {0, -1};
-        command_move_down ->
+        move_south ->
             {0, 1};
-        command_move_left ->
+        move_west ->
             {-1, 0};
-        command_move_right ->
+        move_east ->
             {1, 0}
     end.
 
 deltas_to_direction(DeltaX, DeltaY) ->
     case {DeltaX, DeltaY} of
         {0, -1} ->
-            command_move_up;
+            move_north;
         {0, 1} ->
-            command_move_down;
+            move_south;
         {-1, 0} ->
-            command_move_left;
+            move_west;
         {1, 0} ->
-            command_move_right
+            move_east
     end.
 
 is_of_interest(Maze, X, Y) ->

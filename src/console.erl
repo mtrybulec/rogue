@@ -200,38 +200,38 @@ get_command(Game) ->
         "h" ->
             show_hoard;
         "d" ->
-            command_debug;
+            show_debug_info;
         "r" ->
-            command_restart;
+            restart_game;
         "?" ->
-            command_help;
+            show_help;
         "q" ->
-            command_quit;
+            quit_game;
         "i" ->
-            command_move_up;
+            move_north;
         "k" ->
-            command_move_down;
+            move_south;
         "j" ->
-            command_move_left;
+            move_west;
         "l" ->
-            command_move_right;
+            move_east;
         "t" ->
             take_stairs;
         _ ->
-            command_unknown
+            unknown_command
     end,
     
     case Command of
         show_hoard ->
             hoard(Game),
             get_command(Game);
-        command_debug ->
+        show_debug_info ->
             debug(Game),
             get_command(Game);
-        command_help ->
+        show_help ->
             help(Game),
             get_command(Game);
-        command_unknown ->
+        unknown_command ->
             hint(),
             get_command(Game);
         _ ->
