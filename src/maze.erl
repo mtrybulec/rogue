@@ -145,6 +145,7 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, 0) ->
     end;
 generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
     SegmentLength = rand:uniform(?MaxCorridorSegmentLength),
+    
     EndX = min(max(X + SegmentLength * DeltaX, 1), ?BoardWidth),
     EndY = min(max(Y + SegmentLength * DeltaY, 1), ?BoardHeight),
     
@@ -226,25 +227,24 @@ is_corner([_H | T], PosX, PosY) ->
 is_corner([], _PosX, _PosY) ->
     false.
 
-is_door([{door, {PosX, PosY}} | _T], PosX, PosY) ->
+is_object(Object, [{Object, {X, Y}} | _T], X, Y) ->
     true;
-is_door([_H | T], PosX, PosY) ->
-    is_door(T, PosX, PosY);
-is_door([], _PosX, _PosY) ->
+is_object(Object, [_H | T], X, Y) ->
+    is_object(Object, T, X, Y);
+is_object(_Object, [], _X, _Y) ->
     false.
 
-is_stairs([{stairs, {PosX, PosY}} | _T], PosX, PosY) ->
-    true;
-is_stairs([_H | T], PosX, PosY) ->
-    is_stairs(T, PosX, PosY);
-is_stairs([], _PosX, _PosY) ->
-    false.
+is_door(Maze, X, Y) ->
+    is_object(door, Maze, X, Y).
 
-is_item([{item, {PosX, PosY}, _} | _T], PosX, PosY) ->
+is_stairs(Maze, X, Y) ->
+    is_object(stairs, Maze, X, Y).
+
+is_item([{item, {X, Y}, _} | _T], X, Y) ->
     true;
-is_item([_H | T], PosX, PosY) ->
-    is_item(T, PosX, PosY);
-is_item([], _PosX, _PosY) ->
+is_item([_H | T], X, Y) ->
+    is_item(T, X, Y);
+is_item([], _X, _Y) ->
     false.
 
 is_edge(X, Y) when
