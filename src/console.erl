@@ -50,14 +50,14 @@ goto_xy({X, Y}) ->
 goto_xy(X, Y) ->
     io:format("\033[~w;~wH", [Y, X]).
 
-draw_board({game, GameData} = Game) ->
-    draw_maze(maps:get(maze, GameData)),
-    draw_hero(maps:get(hero, GameData)),
+draw_board(Game) ->
+    draw_maze(maps:get(maze, Game)),
+    draw_hero(maps:get(hero, Game)),
     draw_info(Game).
 
-draw_info({game, GameData} = _Game) ->
-    {hero, HeroData} = maps:get(hero, GameData),
-    {stats, StatsData} = maps:get(stats, GameData),
+draw_info(Game) ->
+    {hero, HeroData} = maps:get(hero, Game),
+    {stats, StatsData} = maps:get(stats, Game),
     
     goto_xy(0, ?InfoRow),
     io:format("Turn: ~p Level: ~p Strength: ~p", [
@@ -298,8 +298,8 @@ debug(Game) ->
     clear_screen(),
     draw_board(Game).
 
-hoard({game, GameData} = Game) ->
-    {hero, HeroData} = maps:get(hero, GameData),
+hoard(Game) ->
+    {hero, HeroData} = maps:get(hero, Game),
     Items = maps:get(items, HeroData),
     
     case Items of
