@@ -279,7 +279,7 @@ dead(Game) ->
     show_message("You died of exhaustion; game over.~n").
 
 done() ->
-    show_message("Done, you won!~n").
+    show_message(io_lib:format("Done, good job, you recovered ~s!~n", [?Treasure])).
 
 quit() ->
     show_message("Quitting...~n").

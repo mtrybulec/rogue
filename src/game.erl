@@ -98,10 +98,9 @@ collect_item(Game) ->
             };
         false ->
             NewStrength = Strength - ?StrengthLossOnHittingWallOrGround,
-            NewHero = Hero#{strength => NewStrength},
             
             Game#{
-                hero => NewHero,
+                hero => Hero#{strength => NewStrength},
                 stats => NewStats
             }
     end.
@@ -146,10 +145,9 @@ take_stairs(Game) ->
             NewGame;
         false ->
             NewStrength = Strength - ?StrengthLossOnHittingWallOrGround,
-            NewHero = Hero#{strength => NewStrength},
             
             Game#{
-                hero => NewHero,
+                hero => Hero#{strength => NewStrength},
                 stats => NewStats
             }
     end.
@@ -157,21 +155,22 @@ take_stairs(Game) ->
 move(Game, Command, Running, undefined) ->
     Maze = maps:get(maze, Game),
     Hero = maps:get(hero, Game),
+   
     {X, Y} = maps:get(position, Hero),
     {DeltaX, DeltaY} = direction_to_deltas(Command),
+   
     IsEmptyOrt1 = maze:is_empty(Maze, X + DeltaY, Y + DeltaX),
     IsEmptyOrt2 = maze:is_empty(Maze, X - DeltaY, Y - DeltaX),
     
     move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2});
 move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     Hero = maps:get(hero, Game),
-    Maze = maps:get(maze, Game),
-    
-    {X, Y} = maps:get(position, Hero),
-    Strength = maps:get(strength, Hero),
-
     Stats = maps:get(stats, Game),
-    
+    NewStats = Stats#{
+        turn => maps:get(turn, Stats) + 1
+    },
+    Maze = maps:get(maze, Game),
+    {X, Y} = maps:get(position, Hero),
     {DeltaX, DeltaY} = direction_to_deltas(Command),
     {NewX, NewY} = {X + DeltaX, Y + DeltaY},
     
@@ -182,6 +181,8 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
             {X, Y}
     end,
     
+    Strength = maps:get(strength, Hero),
+
     NewStrength = case maze:is_empty(Maze, NewX, NewY) of
         false ->
             %% Don't hit the wall - you'll hurt yourself!
@@ -196,15 +197,14 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
             end
     end,
     
-    NewHero = Hero#{
-        position => NewPosition,
-        strength => NewStrength
-    },
+    Stats = maps:get(stats, Game),
+    
     NewGame = Game#{
-        hero => NewHero,
-        stats => Stats#{
-            turn => maps:get(turn, Stats) + 1
-        }
+        hero => Hero#{
+            position => NewPosition,
+            strength => NewStrength
+        },
+        stats => NewStats
     },
     
     case NewStrength of
