@@ -6,7 +6,7 @@
 
 -define(LevelCount, 3).
 -define(ReciprocalStrengthLossOnMove, 10).
--define(StrengthLossOnHittingWallOrGround, 1).
+-define(StrengthLossOnInvalidCommand, 1).
 
 is_last_level(Level) ->
     Level >= ?LevelCount.
@@ -97,7 +97,7 @@ collect_item(Game) ->
                 stats => NewStats
             };
         false ->
-            NewStrength = Strength - ?StrengthLossOnHittingWallOrGround,
+            NewStrength = Strength - ?StrengthLossOnInvalidCommand,
             
             Game#{
                 hero => Hero#{strength => NewStrength},
@@ -144,7 +144,7 @@ take_stairs(Game) ->
             
             NewGame;
         false ->
-            NewStrength = Strength - ?StrengthLossOnHittingWallOrGround,
+            NewStrength = Strength - ?StrengthLossOnInvalidCommand,
             
             Game#{
                 hero => Hero#{strength => NewStrength},
@@ -186,7 +186,7 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     NewStrength = case maze:is_empty(Maze, NewX, NewY) of
         false ->
             %% Don't hit the wall - you'll hurt yourself!
-            Strength - ?StrengthLossOnHittingWallOrGround;
+            Strength - ?StrengthLossOnInvalidCommand;
         true ->
             %% Walking around saps energy; running even more so...
             case rand:uniform(?ReciprocalStrengthLossOnMove div (util:boolean_to_integer(Running) + 1)) of
