@@ -192,48 +192,48 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
 remove_item(Maze, X, Y) ->
     remove_item(Maze, X, Y, {undefined, []}).
 
-remove_item([{item, {PosX, PosY}, Item} | T], PosX, PosY, {undefined, NewMaze}) ->
+remove_item([{item, {X, Y}, Item} | T], X, Y, {undefined, NewMaze}) ->
     {Item, T ++ NewMaze};
-remove_item([H | T], PosX, PosY, {undefined, NewMaze}) ->
-    remove_item(T, PosX, PosY, {undefined, [H] ++ NewMaze});
+remove_item([H | T], X, Y, {undefined, NewMaze}) ->
+    remove_item(T, X, Y, {undefined, [H] ++ NewMaze});
 remove_item([], _X, _Y, Result) ->
     Result.
 
-is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
-    X1 < PosX, Y1 < PosY, X2 > PosX, Y2 > PosY ->
+is_empty([{room, {{X1, Y1}, {X2, Y2}}} | _T], X, Y) when
+    X1 < X, Y1 < Y, X2 > X, Y2 > Y ->
     true;
-is_empty([{door, {PosX, PosY}} | _T], PosX, PosY) ->
+is_empty([{door, {X, Y}} | _T], X, Y) ->
     true;
-is_empty([{stairs, {PosX, PosY}} | _T], PosX, PosY) ->
+is_empty([{stairs, {X, Y}} | _T], X, Y) ->
     true;
-is_empty([{item, {PosX, PosY}, _} | _T], PosX, PosY) ->
+is_empty([{item, {X, Y}, _} | _T], X, Y) ->
     true;
-is_empty([{corridor, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
-    X1 =< PosX, Y1 =< PosY, X2 >= PosX, Y2 >= PosY ->
+is_empty([{corridor, {{X1, Y1}, {X2, Y2}}} | _T], X, Y) when
+    X1 =< X, Y1 =< Y, X2 >= X, Y2 >= Y ->
     true;
-is_empty([_H | T], PosX, PosY) ->
-    is_empty(T, PosX, PosY);
-is_empty([], _PosX, _PosY) ->
+is_empty([_H | T], X, Y) ->
+    is_empty(T, X, Y);
+is_empty([], _X, _Y) ->
     false.
 
-is_wall([{room, {{X1, Y1}, {X2, Y2}}} | _T] = Maze, PosX, PosY) when
-    X1 == PosX orelse X2 == PosX, Y1 =< PosY, Y2 >= PosY;
-    Y1 == PosY orelse Y2 == PosY, X1 =< PosX, X2 >= PosX ->
-    not is_empty(Maze, PosX, PosY);
-is_wall([_H | T], PosX, PosY) ->
-    is_wall(T, PosX, PosY);
-is_wall([], _PosX, _PosY) ->
+is_wall([{room, {{X1, Y1}, {X2, Y2}}} | _T] = Maze, X, Y) when
+    X1 == X orelse X2 == X, Y1 =< Y, Y2 >= Y;
+    Y1 == Y orelse Y2 == Y, X1 =< X, X2 >= X ->
+    not is_empty(Maze, X, Y);
+is_wall([_H | T], X, Y) ->
+    is_wall(T, X, Y);
+is_wall([], _X, _Y) ->
     false.
 
-is_corner([{room, {{X1, Y1}, {X2, Y2}}} | _T], PosX, PosY) when
-    X1 == PosX, Y1 == PosY;
-    X2 == PosX, Y1 == PosY;
-    X1 == PosX, Y2 == PosY;
-    X2 == PosX, Y2 == PosY ->
+is_corner([{room, {{X1, Y1}, {X2, Y2}}} | _T], X, Y) when
+    X1 == X, Y1 == Y;
+    X2 == X, Y1 == Y;
+    X1 == X, Y2 == Y;
+    X2 == X, Y2 == Y ->
     true;
-is_corner([_H | T], PosX, PosY) ->
-    is_corner(T, PosX, PosY);
-is_corner([], _PosX, _PosY) ->
+is_corner([_H | T], X, Y) ->
+    is_corner(T, X, Y);
+is_corner([], _X, _Y) ->
     false.
 
 is_object(Object, [{Object, {X, Y}} | _T], X, Y) ->
