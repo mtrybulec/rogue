@@ -13,6 +13,7 @@
     
     welcome/0,
     dead/1,
+    done/0,
     quit/0
 ]).
 
@@ -279,6 +280,10 @@ dead(Game) ->
     draw_info(Game),
     clear_message(),
     io:format("You died of exhaustion; game over.~n").
+
+done() ->
+    clear_message(),
+    io:format("Done, you won!~n").
 
 quit() ->
     clear_message(),

@@ -30,31 +30,39 @@ play() ->
 
 play({game, GameData} = Game) ->
     {hero, HeroData} = maps:get(hero, GameData),
-    Strength = maps:get(strength, HeroData),
+    Items = maps:get(items, HeroData),
     
-    case Strength =< 0 of
+    case lists:any(fun(Item) -> Item == treasure end, Items) of
         true ->
-            console:dead(Game),
-            rip;
+            console:done(),
+            done;
         false ->
-            console:draw_info(Game),
-            {Command, Running} = console:get_command(Game),
+            Strength = maps:get(strength, HeroData),
     
-            case Command of
-                command_restart ->
-                    play();
-                command_quit ->
-                    console:quit(),
-                    quit;
-                collect_item ->
-                    NewGame = collect_item(Game),
-                    play(NewGame);
-                take_stairs ->
-                    NewGame = take_stairs(Game),
-                    play(NewGame);
-                _ ->
-                    NewGame = move(Game, Command, Running, undefined),
-                    play(NewGame)
+            case Strength =< 0 of
+                true ->
+                    console:dead(Game),
+                    rip;
+                false ->
+                    console:draw_info(Game),
+                    {Command, Running} = console:get_command(Game),
+            
+                    case Command of
+                        command_restart ->
+                            play();
+                        command_quit ->
+                            console:quit(),
+                            quit;
+                        collect_item ->
+                            NewGame = collect_item(Game),
+                            play(NewGame);
+                        take_stairs ->
+                            NewGame = take_stairs(Game),
+                            play(NewGame);
+                        _ ->
+                            NewGame = move(Game, Command, Running, undefined),
+                            play(NewGame)
+                    end
             end
     end.
 
@@ -83,7 +91,7 @@ collect_item({game, GameData}) ->
             {game, GameData#{
                 maze => NewMaze,
                 hero => {hero, HeroData#{
-                    items => [Item] ++Items,
+                    items => [Item] ++ Items,
                     strength => NewStrength}},
                 stats => NewStats
             }};
