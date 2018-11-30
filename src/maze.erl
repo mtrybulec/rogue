@@ -37,9 +37,11 @@ generate_maze(IsLastLevel) ->
     generate_maze(IsLastLevel, FirstRoom, ?MazeComplexity).
 
 generate_maze(false, Maze, 0) ->
-    [generate_stairs(Maze)] ++ Maze;
+    NewMaze = [generate_stairs(Maze)] ++ Maze,
+    generate_monsters(NewMaze);
 generate_maze(true, Maze, 0) ->
-    [generate_treasure(Maze)] ++ Maze;
+    NewMaze = [generate_treasure(Maze)] ++ Maze,
+    generate_monsters(NewMaze);
 generate_maze(IsLastLevel, Maze, Trials) ->
     generate_maze(IsLastLevel, generate_door(Maze) ++ Maze, Trials - 1).
 
@@ -188,6 +190,10 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
             %% DeltaX/Y are substituted intentionally to switch direction to a perpendicular one:
             [Segment] ++ generate_corridor([Segment] ++ Maze, EndX, EndY, DeltaY * DeltaChange, DeltaX * DeltaChange, SegmentCount - 1)
     end.
+
+generate_monsters(Maze) ->
+    {X, Y} = maze:generate_empty_point(Maze),
+    [{monster, {X, Y}, orc}] ++ Maze.
 
 remove_item(Maze, X, Y) ->
     remove_item(Maze, X, Y, {undefined, []}).

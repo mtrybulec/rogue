@@ -69,8 +69,9 @@ draw_info(Game) ->
 draw_maze(Maze) ->
     draw_rooms(Maze),
     draw_passages(Maze),
+    draw_stairs(Maze),
     draw_items(Maze),
-    draw_stairs(Maze).
+    draw_monsters(Maze).
 
 draw_rooms([{room, _} = Room | T]) ->
     draw_room(Room),
@@ -147,6 +148,18 @@ draw_items([{item, {X, Y}, treasure} | _T]) ->
 draw_items([_ | T]) ->
     draw_items(T);
 draw_items([]) ->
+    ok.
+
+draw_monsters([{monster, {X, Y}, Monster} | _T]) ->
+    goto_xy(X, Y),
+    MonsterChar = case Monster of
+        orc ->
+            "O"
+    end,
+    io:format(MonsterChar);
+draw_monsters([_ | T]) ->
+    draw_monsters(T);
+draw_monsters([]) ->
     ok.
 
 draw_hero(Hero) ->
