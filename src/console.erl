@@ -240,63 +240,58 @@ get_command(Game) ->
 
 clear_message() ->
     goto_xy(0, ?MessageRow),
-    clear_eol(),
-    ok.
+    clear_eol().
+
+show_message(Message) ->
+    clear_message(),
+    io:format(Message).
 
 welcome() ->
-    clear_message(),
-    io:format("Welcome to ~s, good luck! Press ? for help.", [?Name]),
-    ok.
+    show_message(io_lib:format("Welcome to ~s, good luck! Press ? for help.", [?Name])).
 
 help(Game) ->
-    clear_screen(),
-    goto_xy(0, 0),
-    io:format("~s help~n", [?Name]),
-    io:format("~n"),
-    io:format("Find the treasure - ~s!~n", [?Treasure]),
-    io:format("~n"),
-    io:format("Commands:~n"),
-    io:format("? - show this screen~n"),
-    io:format("i - go North~n"),
-    io:format("k - go South~n"),
-    io:format("j - go West~n"),
-    io:format("l - go East~n"),
-    io:format("c - collect item~n"),
-    io:format("h - hoard~n"),
-    io:format("t - take the stairs~n"),
-    io:format("q - quit~n"),
-    io:format("~n"),
-    io:format("Shift + a 'go' command - run (use Caps Lock to toggle run mode)~n"),
-    flush_io(),
-    io:get_chars("Press any key to continue...", 1),
-    clear_screen(),
-    draw_board(Game).
+    show_info_screen(
+        Game,
+        io_lib:format("~s help", [?Name]),
+        fun () ->
+            io:format("Find the treasure - ~s!~n", [?Treasure]),
+            io:format("~n"),
+            io:format("Commands:~n"),
+            io:format("? - show this screen~n"),
+            io:format("i - go North~n"),
+            io:format("k - go South~n"),
+            io:format("j - go West~n"),
+            io:format("l - go East~n"),
+            io:format("c - collect item~n"),
+            io:format("h - hoard~n"),
+            io:format("t - take the stairs~n"),
+            io:format("q - quit~n"),
+            io:format("~n"),
+            io:format("Shift + a 'go' command - run (use Caps Lock to toggle run mode)~n")
+        end
+    ).
 
 hint() ->
-    clear_message(),
-    io:format("Unknown command; press ? for help.").
+    show_message("Unknown command; press ? for help.").
 
 dead(Game) ->
     draw_info(Game),
-    clear_message(),
-    io:format("You died of exhaustion; game over.~n").
+    show_message("You died of exhaustion; game over.~n").
 
 done() ->
-    clear_message(),
-    io:format("Done, you won!~n").
+    show_message("Done, you won!~n").
 
 quit() ->
-    clear_message(),
-    io:format("Quitting...~n").
+    show_message("Quitting...~n").
 
 debug(Game) ->
-    clear_screen(),
-    goto_xy(0, 0),
-    io:format("~p~n", [Game]),
-    flush_io(),
-    io:get_chars("Press any key to continue...", 1),
-    clear_screen(),
-    draw_board(Game).
+    show_info_screen(
+        Game,
+        "Debug information",
+        fun () ->
+            io:format("~p~n", [Game])
+        end
+    ).
 
 hoard(Game) ->
     Hero = maps:get(hero, Game),
@@ -304,18 +299,15 @@ hoard(Game) ->
     
     case Items of
         [] ->
-            clear_message(),
-            io:format("No items in the hoard.");
+            show_message("No items in the hoard.");
         _ ->
-            clear_screen(),
-            goto_xy(0, 0),
-            io:format("Your hoard:~n"),
-            io:format("~n"),
-            lists:foreach(fun(Item) -> io:format("- ~p~n", [Item]) end, Items),
-            flush_io(),
-            io:get_chars("Press any key to continue...", 1),
-            clear_screen(),
-            draw_board(Game)
+            show_info_screen(
+                Game,
+                "Your hoard",
+                fun () ->
+                    lists:foreach(fun(Item) -> io:format("- ~p~n", [Item]) end, Items)
+                end
+            )
     end.
 
 flush_io() ->
@@ -325,3 +317,15 @@ flush_io() ->
         false ->
             io:format("~n")
     end.
+
+show_info_screen(Game, Title, F) when is_function(F, 0) ->
+    clear_screen(),
+    goto_xy(0, 0),
+    io:format("~s:~n", [Title]),
+    io:format("~n"),
+    F(),
+    flush_io(),
+    io:get_chars("Press any key to continue...", 1),
+    clear_screen(),
+    draw_board(Game).
+    
