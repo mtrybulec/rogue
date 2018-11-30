@@ -215,6 +215,8 @@ is_empty([{stairs, {X, Y}} | _T], X, Y) ->
     true;
 is_empty([{item, {X, Y}, _} | _T], X, Y) ->
     true;
+is_empty([{monster, {X, Y}, _} | _T], X, Y) ->
+    false;
 is_empty([{corridor, {{X1, Y1}, {X2, Y2}}} | _T], X, Y) when
     X1 =< X, Y1 =< Y, X2 >= X, Y2 >= Y ->
     true;
