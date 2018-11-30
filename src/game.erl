@@ -210,6 +210,11 @@ deltas_to_direction(DeltaX, DeltaY) ->
             command_move_right
     end.
 
+is_of_interest(Maze, X, Y) ->
+    maze:is_door(Maze, X, Y) orelse
+    maze:is_stairs(Maze, X, Y) orelse
+    maze:is_item(Maze, X, Y).
+
 %% Stop running when:
 %% - the next cell in the current direction is not empty,
 %% - the cell is next to a door,
@@ -221,9 +226,9 @@ stop_running(Maze, X, Y, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2) ->
     {Ort2X, Ort2Y} = {X - DeltaY, Y - DeltaX},
 
     Result = not maze:is_empty(Maze, NextX, NextY) orelse
-        maze:is_door(Maze, NextX, NextY) orelse maze:is_stairs(Maze, NextX, NextY) orelse
-        maze:is_door(Maze, Ort1X, Ort1Y) orelse maze:is_stairs(Maze, Ort1X, Ort1Y) orelse
-        maze:is_door(Maze, Ort2X, Ort2Y) orelse maze:is_stairs(Maze, Ort2X, Ort2Y),
+        is_of_interest(Maze, NextX, NextY) orelse
+        is_of_interest(Maze, Ort1X, Ort1Y) orelse
+        is_of_interest(Maze, Ort2X, Ort2Y),
 
     case Result of
         true ->
@@ -245,6 +250,5 @@ restart_running_after_turn(Maze, X, Y, DeltaX, DeltaY, TurnDirection) ->
     {Ort2X, Ort2Y} = {X - TurnDirection * DeltaY, Y - TurnDirection * DeltaX},
     not maze:is_empty(Maze, NextX, NextY) andalso
         maze:is_empty(Maze, Ort1X, Ort1Y) andalso
-        not maze:is_door(Maze, Ort1X, Ort1Y) andalso
-        not maze:is_stairs(Maze, Ort1X, Ort1Y) andalso
+        not is_of_interest(Maze, Ort1X, Ort1Y) andalso
         not maze:is_empty(Maze, Ort2X, Ort2Y).
