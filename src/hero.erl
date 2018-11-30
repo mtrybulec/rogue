@@ -5,13 +5,10 @@
     initialize_hero_position/1
 ]).
 
--include("board.hrl").
-
 -define(InitialStrength, 100).
 
 initialize_hero_position(Maze) ->
-    X = rand:uniform(?BoardWidth),
-    Y = rand:uniform(?BoardHeight),
+    {X, Y} = board:generate_point(),
     
     case maze:is_empty(Maze, X, Y) of
         true ->

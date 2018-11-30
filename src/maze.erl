@@ -33,8 +33,7 @@ generate_maze(IsLastLevel, Maze, Trials) ->
     generate_maze(IsLastLevel, generate_door(Maze) ++ Maze, Trials - 1).
 
 generate_stairs(Maze) ->
-    X = rand:uniform(?BoardWidth),
-    Y = rand:uniform(?BoardHeight),
+    {X, Y} = board:generate_point(),
     
     case maze:is_empty(Maze, X, Y) andalso
         not maze:is_door(Maze, X, Y) of
@@ -45,8 +44,7 @@ generate_stairs(Maze) ->
     end.
 
 generate_treasure(Maze) ->
-    X = rand:uniform(?BoardWidth),
-    Y = rand:uniform(?BoardHeight),
+    {X, Y} = board:generate_point(),
     
     case maze:is_empty(Maze, X, Y) andalso
         not maze:is_door(Maze, X, Y) of
@@ -63,15 +61,14 @@ generate_room_dimensions() -> {
 
 generate_room() ->
     {Width, Height} = generate_room_dimensions(),
-    
+
     X = rand:uniform(?BoardWidth - Width),
     Y = rand:uniform(?BoardHeight - Height),
 
     {room, {{X, Y}, {X + Width - 1, Y + Height - 1}}}.
 
 generate_door(Maze) ->
-    X = rand:uniform(?BoardWidth),
-    Y = rand:uniform(?BoardHeight),
+    {X, Y} = board:generate_point(),
     
     case is_wall(Maze, X, Y) andalso
         not is_empty(Maze, X, Y) andalso
