@@ -262,14 +262,17 @@ is_outside(_X, _Y) ->
 is_outside({room, {{X1, Y1}, {X2, Y2}}}) ->
     is_outside(X1, Y1) orelse is_outside(X2, Y2).
 
-room_overlaps([{_, {{X1, Y1}, {X2, Y2}}} | T], {room, {{PosX1, PosY1}, {PosX2, PosY2}}} = Room) ->
-    case max(X1, X2) < min(PosX1, PosX2) orelse
-        min(X1, X2) > max(PosX1, PosX2) orelse
-        max(Y1, Y2) < min(PosY1, PosY2) orelse
-        min(Y1, Y2) > max(PosY1, PosY2) of
-        true ->
-            room_overlaps(T, Room);
+overlaps({{X1, Y1}, {X2, Y2}}, {{X3, Y3}, {X4, Y4}}) ->
+    not (max(X1, X2) < min(X3, X4) orelse
+        min(X1, X2) > max(X3, X4) orelse
+        max(Y1, Y2) < min(Y3, Y4) orelse
+        min(Y1, Y2) > max(Y3, Y4)).
+
+room_overlaps([{_, {{_X1, _Y1}, {_X2, _Y2}} = Coords1} | T], {room, Coords2} = Room) ->
+    case overlaps(Coords1, Coords2) of
         false ->
+            room_overlaps(T, Room);
+        true ->
             true
     end;
 room_overlaps([_H | T], Room) ->
@@ -277,14 +280,11 @@ room_overlaps([_H | T], Room) ->
 room_overlaps([], _Room) ->
     false.
 
-overlaps_rooms([{room, {{X1, Y1}, {X2, Y2}}} | T], {corridor, {{PosX1, PosY1}, {PosX2, PosY2}}} = Corridor) ->
-    case max(X1, X2) < min(PosX1, PosX2) orelse
-        min(X1, X2) > max(PosX1, PosX2) orelse
-        max(Y1, Y2) < min(PosY1, PosY2) orelse
-        min(Y1, Y2) > max(PosY1, PosY2) of
-        true ->
-            overlaps_rooms(T, Corridor);
+overlaps_rooms([{room, Coords1} | T], {corridor, Coords2} = Corridor) ->
+    case overlaps(Coords1, Coords2) of
         false ->
+            overlaps_rooms(T, Corridor);
+        true ->
             true
     end;
 overlaps_rooms([_H | T], Corridor) ->
