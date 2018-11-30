@@ -164,7 +164,12 @@ move(Maze, {OldX, OldY}, {NewX, NewY}) ->
                 true ->
                     io:format(?StairsChar);
                 false ->
-                    io:format(?EmptyChar)
+                    case maze:is_item(Maze, OldX, OldY) of
+                        true ->
+                            io:format(?TreasureChar);
+                        false ->
+                            io:format(?EmptyChar)
+                    end
             end
     end,
     goto_xy(NewX, NewY),

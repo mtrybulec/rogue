@@ -5,7 +5,8 @@
     is_empty/3,
     is_wall/3,
     is_door/3,
-    is_stairs/3
+    is_stairs/3,
+    is_item/3
 ]).
 
 -include("board.hrl").
@@ -229,6 +230,13 @@ is_stairs([{stairs, {PosX, PosY}} | _T], PosX, PosY) ->
 is_stairs([_H | T], PosX, PosY) ->
     is_stairs(T, PosX, PosY);
 is_stairs([], _PosX, _PosY) ->
+    false.
+
+is_item([{item, {PosX, PosY}, _} | _T], PosX, PosY) ->
+    true;
+is_item([_H | T], PosX, PosY) ->
+    is_item(T, PosX, PosY);
+is_item([], _PosX, _PosY) ->
     false.
 
 is_edge(X, Y) when
