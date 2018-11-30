@@ -30,19 +30,19 @@ play() ->
 
 play(Game) ->
     Hero = maps:get(hero, Game),
-    Items = maps:get(items, Hero),
+    Strength = maps:get(strength, Hero),
     
-    case lists:any(fun(Item) -> Item == treasure end, Items) of
+    case Strength =< 0 of
         true ->
-            console:done(),
-            done;
+            console:dead(Game),
+            rip;
         false ->
-            Strength = maps:get(strength, Hero),
+            Items = maps:get(items, Hero),
     
-            case Strength =< 0 of
+            case lists:any(fun(Item) -> Item == treasure end, Items) of
                 true ->
-                    console:dead(Game),
-                    rip;
+                    console:done(),
+                    done;
                 false ->
                     console:draw_info(Game),
                     {Command, Running} = console:get_command(Game),
