@@ -185,54 +185,23 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     
     Strength = maps:get(strength, Hero),
 
-    {NewStrength, NewMaze, NewRunning} = case maze:is_empty(Maze, NewX, NewY) of
-        false ->
-            case maze:is_monster(Maze, NewX, NewY) of
-                true ->
-                    {Monster, MazeNoMonster} = maze:remove_monster(Maze, NewX, NewY),
-                    {MonsterType, MonsterStrength} = Monster,
-                    MonsterStrengthAfterAttack = MonsterStrength - rand:uniform(?HitStrength) - rand:uniform(?HitStrength),
-                   
-                    MazeAfterAttack = case MonsterStrengthAfterAttack =< 0 of
-                        true ->
-                            console:update(MazeNoMonster, NewX, NewY),
-                            MazeNoMonster;
-                        false ->
-                            [{monster, {NewX, NewY}, {MonsterType, MonsterStrengthAfterAttack}}] ++ MazeNoMonster
-                    end,
-
-                    {Strength - ?StrengthLossOnAttack, MazeAfterAttack, false};
-                false ->
-                    %% Don't hit the wall - you'll hurt yourself!
-                    {Strength - ?StrengthLossOnInvalidCommand, Maze, false}
-            end;
-        true ->
-            %% Walking around saps energy; running - even more so...
-            StrengthAfterMove = case rand:uniform(?ReciprocalStrengthLossOnMove div (util:boolean_to_integer(Running) + 1)) of
-                1 ->
-                    Strength - 1;
-                _ ->
-                    Strength
-            end,
-            
-            {StrengthAfterMove, Maze, Running}
-    end,
+    {StrengthHeroMoved, MazeHeroMoved, RunningHeroMoved} = handle_hero_move(Maze, NewX, NewY, Strength, Running),
     
     NewGame = Game#{
-        maze => NewMaze,
+        maze => MazeHeroMoved,
         hero => Hero#{
             position => NewPosition,
-            strength => NewStrength
+            strength => StrengthHeroMoved
         },
         stats => NewStats
     },
     
-    case NewStrength of
+    case StrengthHeroMoved of
         0 ->
             NewGame;
         _ ->
             console:move(Maze, {X, Y}, NewPosition),
-            case NewRunning of
+            case RunningHeroMoved of
                 true ->
                     {StopRunning, NewIsEmptyOrt1, NewIsEmptyOrt2} =
                         stop_running(Maze, NewX, NewY, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
@@ -257,6 +226,40 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
                 false ->
                     NewGame
             end
+    end.
+
+handle_hero_move(Maze, NewX, NewY, Strength, Running) ->
+    case maze:is_empty(Maze, NewX, NewY) of
+        false ->
+            case maze:is_monster(Maze, NewX, NewY) of
+                true ->
+                    {Monster, MazeNoMonster} = maze:remove_monster(Maze, NewX, NewY),
+                    {MonsterType, MonsterStrength} = Monster,
+                    MonsterStrengthAfterAttack = MonsterStrength - rand:uniform(?HitStrength) - rand:uniform(?HitStrength),
+                    
+                    MazeAfterAttack = case MonsterStrengthAfterAttack =< 0 of
+                        true ->
+                            console:update(MazeNoMonster, NewX, NewY),
+                            MazeNoMonster;
+                        false ->
+                            [{monster, {NewX, NewY}, {MonsterType, MonsterStrengthAfterAttack}}] ++ MazeNoMonster
+                    end,
+                    
+                    {Strength - ?StrengthLossOnAttack, MazeAfterAttack, false};
+                false ->
+                    %% Don't hit the wall - you'll hurt yourself!
+                    {Strength - ?StrengthLossOnInvalidCommand, Maze, false}
+            end;
+        true ->
+            %% Walking around saps energy; running - even more so...
+            StrengthAfterMove = case rand:uniform(?ReciprocalStrengthLossOnMove div (util:boolean_to_integer(Running) + 1)) of
+                1 ->
+                    Strength - 1;
+                _ ->
+                    Strength
+            end,
+            
+            {StrengthAfterMove, Maze, Running}
     end.
 
 direction_to_deltas(Direction) ->
