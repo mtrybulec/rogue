@@ -7,7 +7,7 @@
 -define(LevelCount, 3).
 -define(ReciprocalStrengthLossOnMove, 10).
 -define(StrengthLossOnInvalidCommand, 1).
--define(StrengthLossOnHit, 1).
+-define(StrengthLossOnAttack, 1).
 -define(HitStrength, 6).
 
 is_last_level(Level) ->
@@ -191,17 +191,17 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
                 true ->
                     {Monster, MazeNoMonster} = maze:remove_monster(Maze, NewX, NewY),
                     {MonsterType, MonsterStrength} = Monster,
-                    MonsterStrengthAfterHit = MonsterStrength - rand:uniform(?HitStrength) - rand:uniform(?HitStrength),
+                    MonsterStrengthAfterAttack = MonsterStrength - rand:uniform(?HitStrength) - rand:uniform(?HitStrength),
                    
-                    MazeAfterHit = case MonsterStrengthAfterHit =< 0 of
+                    MazeAfterAttack = case MonsterStrengthAfterAttack =< 0 of
                         true ->
                             console:update(MazeNoMonster, NewX, NewY),
                             MazeNoMonster;
                         false ->
-                            [{monster, {NewX, NewY}, {MonsterType, MonsterStrengthAfterHit}}] ++ MazeNoMonster
+                            [{monster, {NewX, NewY}, {MonsterType, MonsterStrengthAfterAttack}}] ++ MazeNoMonster
                     end,
 
-                    {Strength - ?StrengthLossOnHit, MazeAfterHit, false};
+                    {Strength - ?StrengthLossOnAttack, MazeAfterAttack, false};
                 false ->
                     %% Don't hit the wall - you'll hurt yourself!
                     {Strength - ?StrengthLossOnInvalidCommand, Maze, false}
