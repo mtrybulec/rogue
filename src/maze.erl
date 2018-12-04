@@ -112,6 +112,7 @@ generate_door(Maze) ->
                     generate_door(Maze);
                 false ->
                     Corridor = generate_corridor(Maze, NewX, NewY, DeltaX, DeltaY),
+                    
                     case length(Corridor) of
                         0 ->
                             generate_door(Maze);
@@ -249,7 +250,7 @@ is_empty([], _X, _Y) ->
 is_wall([{room, {{X1, Y1}, {X2, Y2}}} | _T] = Maze, X, Y) when
     X1 == X orelse X2 == X, Y1 =< Y, Y2 >= Y;
     Y1 == Y orelse Y2 == Y, X1 =< X, X2 >= X ->
-    not is_empty(Maze, X, Y);
+    not is_door(Maze, X, Y);
 is_wall([_H | T], X, Y) ->
     is_wall(T, X, Y);
 is_wall([], _X, _Y) ->

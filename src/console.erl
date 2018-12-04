@@ -341,7 +341,11 @@ hoard(Game) ->
                 Game,
                 "Your hoard",
                 fun () ->
-                    lists:foreach(fun(Item) -> io:format("- ~p~n", [Item]) end, Items)
+                    lists:foreach(
+                        fun(Item) ->
+                            io:format("- ~p~n", [Item])
+                        end,
+                        Items)
                 end
             )
     end.
