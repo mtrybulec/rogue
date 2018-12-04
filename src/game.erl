@@ -176,7 +176,7 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     {DeltaX, DeltaY} = direction_to_deltas(Command),
     {NewX, NewY} = {X + DeltaX, Y + DeltaY},
     
-    NewPosition = case maze:is_empty(Maze, NewX, NewY) of
+    NewPosition = case maze:is_empty(Maze, NewX, NewY) andalso not maze:is_monster(Maze, NewX, NewY) of
         true ->
             {NewX, NewY};
         _ ->
@@ -186,58 +186,77 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     Strength = maps:get(strength, Hero),
 
     {MazeHeroMoved, StrengthHeroMoved, RunningHeroMoved} = handle_hero_move(Maze, {NewX, NewY}, Strength, Running),
-    {MazeMonstersMoved, StrengthMonstersMoved, RunningMonstersMoved} = handle_monsters_move(MazeHeroMoved, NewPosition, StrengthHeroMoved, RunningHeroMoved),
     
-    NewGame = Game#{
-        maze => MazeMonstersMoved,
-        hero => Hero#{
-            position => NewPosition,
-            strength => StrengthMonstersMoved
-        },
+    HeroHeroMoved = Hero#{
+        position => NewPosition,
+        strength => StrengthHeroMoved
+    },
+    GameHeroMoved = Game#{
+        maze => MazeHeroMoved,
+        hero => HeroHeroMoved,
         stats => NewStats
     },
     
-    case StrengthMonstersMoved =< 0 of
+    console:move_hero(MazeHeroMoved, {X, Y}, NewPosition),
+
+    case StrengthHeroMoved =< 0 of
         true ->
-            NewGame;
+            GameHeroMoved;
         false ->
-            console:move(Maze, {X, Y}, NewPosition),
-            case RunningMonstersMoved of
+            {MazeMonstersMoved, StrengthMonstersMoved, RunningMonstersMoved} = handle_monsters_move(MazeHeroMoved, NewPosition, StrengthHeroMoved, RunningHeroMoved),
+
+            GameMonstersMoved = GameHeroMoved#{
+                maze => MazeMonstersMoved,
+                hero => HeroHeroMoved#{
+                    strength => StrengthMonstersMoved
+                },
+                stats => NewStats
+            },
+    
+            case StrengthMonstersMoved =< 0 of
                 true ->
-                    {StopRunning, NewIsEmptyOrt1, NewIsEmptyOrt2} =
-                        stop_running(Maze, NewX, NewY, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
-                    case StopRunning of
-                        false ->
-                            move(NewGame, Command, true, {NewIsEmptyOrt1, NewIsEmptyOrt2});
-                        true ->
-                            case restart_running_after_turn(Maze, NewX, NewY, DeltaX, DeltaY, 1) of
-                                true ->
-                                    NewCommand = deltas_to_direction(DeltaY, DeltaX),
-                                    move(NewGame, NewCommand, true, undefined);
-                                false ->
-                                    case restart_running_after_turn(Maze, NewX, NewY, DeltaX, DeltaY, -1) of
-                                        true ->
-                                            NewCommand = deltas_to_direction(-DeltaY, -DeltaX),
-                                            move(NewGame, NewCommand, true, undefined);
-                                        false ->
-                                            NewGame
-                                    end
-                            end
-                    end;
+                    GameMonstersMoved;
                 false ->
-                    NewGame
+                    case RunningMonstersMoved of
+                        true ->
+                            {StopRunning, NewIsEmptyOrt1, NewIsEmptyOrt2} =
+                                stop_running(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
+                            case StopRunning of
+                                false ->
+                                    move(GameMonstersMoved, Command, true, {NewIsEmptyOrt1, NewIsEmptyOrt2});
+                                true ->
+                                    case restart_running_after_turn(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, 1) of
+                                        true ->
+                                            NewCommand = deltas_to_direction(DeltaY, DeltaX),
+                                            move(GameMonstersMoved, NewCommand, true, undefined);
+                                        false ->
+                                            case restart_running_after_turn(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, -1) of
+                                                true ->
+                                                    NewCommand = deltas_to_direction(-DeltaY, -DeltaX),
+                                                    move(GameMonstersMoved, NewCommand, true, undefined);
+                                                false ->
+                                                    GameMonstersMoved
+                                            end
+                                    end
+                            end;
+                        false ->
+                            GameMonstersMoved
+                    end
             end
     end.
 
 handle_hero_move(Maze, {X, Y}, Strength, Running) ->
     case maze:is_empty(Maze, X, Y) of
         false ->
+            %% Don't hit the wall - you'll hurt yourself!
+            {Maze, Strength - ?StrengthLossOnInvalidCommand, false};
+        true ->
             case maze:is_monster(Maze, X, Y) of
                 true ->
                     {Monster, MazeNoMonster} = maze:remove_monster(Maze, X, Y),
                     {MonsterType, MonsterStrength} = Monster,
                     MonsterStrengthAfterAttack = MonsterStrength - rand:uniform(?HitStrength) - rand:uniform(?HitStrength),
-                    
+            
                     MazeAfterAttack = case MonsterStrengthAfterAttack =< 0 of
                         true ->
                             console:update(MazeNoMonster, X, Y),
@@ -245,36 +264,45 @@ handle_hero_move(Maze, {X, Y}, Strength, Running) ->
                         false ->
                             [{monster, {X, Y}, {MonsterType, MonsterStrengthAfterAttack}}] ++ MazeNoMonster
                     end,
-                    
+            
                     {MazeAfterAttack, Strength - ?StrengthLossOnAttack, false};
                 false ->
-                    %% Don't hit the wall - you'll hurt yourself!
-                    {Maze, Strength - ?StrengthLossOnInvalidCommand, false}
-            end;
-        true ->
-            %% Walking around saps energy; running - even more so...
-            StrengthAfterMove = case rand:uniform(?ReciprocalStrengthLossOnMove div (util:boolean_to_integer(Running) + 1)) of
-                1 ->
-                    Strength - 1;
-                _ ->
-                    Strength
-            end,
-            
-            {Maze, StrengthAfterMove, Running}
+                    %% Walking around saps energy; running - even more so...
+                    StrengthAfterMove = case rand:uniform(?ReciprocalStrengthLossOnMove div (util:boolean_to_integer(Running) + 1)) of
+                        1 ->
+                            Strength - 1;
+                        _ ->
+                            Strength
+                    end,
+
+                    {Maze, StrengthAfterMove, Running}
+            end
     end.
 
 handle_monsters_move(Maze, {X, Y}, Strength, Running) ->
     handle_monsters_move(Maze, {X, Y}, Strength, Running, []).
 
-handle_monsters_move([{monster, {MX, MY}, _Monster} = H | T], {HX, HY}, Strength, Running, NewMaze) ->
-    NewStrength = case (abs(MX - HX) == 1 andalso abs(MY - HY) == 0) orelse
-                       (abs(MX - HX) == 0 andalso abs(MY - HY) == 1) of
+handle_monsters_move([{monster, {MX, MY}, {MonsterType, MonsterStrength}} = Monster | T], {HX, HY}, Strength, Running, NewMaze) ->
+    {NewStrength, NewMonster} = case (abs(MX - HX) == 1 andalso abs(MY - HY) == 0) orelse
+                                     (abs(MX - HX) == 0 andalso abs(MY - HY) == 1) of
         true ->
-            Strength - rand:uniform(?HitStrength);
+            {max(0, Strength - rand:uniform(?HitStrength)), Monster};
         false ->
-            Strength
+            DeltaX = util:sign(HX - MX),
+            DeltaY = util:sign(HY - MY),
+            
+            NewMX = MX + DeltaX,
+            NewMY = MY + DeltaY,
+            
+            case maze:is_empty(T ++ NewMaze, NewMX, NewMY) andalso (NewMX =/= HX orelse NewMY =/= HY) andalso not maze:is_monster(T ++ NewMaze, NewMX, NewMY) of
+                true ->
+                    console:move_monster(T ++ NewMaze, {MX, MY}, {NewMX, NewMY}, MonsterType),
+                    {Strength, {monster, {NewMX, NewMY}, {MonsterType, MonsterStrength}}};
+                false ->
+                    {Strength, Monster}
+            end
     end,
-    handle_monsters_move(T, {HX, HY}, NewStrength, Running, [H] ++ NewMaze);
+    handle_monsters_move(T, {HX, HY}, NewStrength, Running, [NewMonster] ++ NewMaze);
 handle_monsters_move([H | T], {X, Y}, Strength, Running, NewMaze) ->
     handle_monsters_move(T, {X, Y}, Strength, Running, [H] ++ NewMaze);
 handle_monsters_move([], {_X, _Y}, Strength, Running, NewMaze) ->

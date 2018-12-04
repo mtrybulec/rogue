@@ -1,7 +1,7 @@
 -module(maze).
 
 -export([
-    generate_empty_point/1,
+    generate_unoccupied_point/1,
     generate_maze/1,
     remove_item/3,
     remove_monster/3,
@@ -10,7 +10,8 @@
     is_door/3,
     is_stairs/3,
     is_item/3,
-    is_monster/3
+    is_monster/3,
+    get_monster/3
 ]).
 
 -include("board.hrl").
@@ -35,6 +36,16 @@ generate_empty_point(Maze) ->
             generate_empty_point(Maze)
     end.
 
+generate_unoccupied_point(Maze) ->
+    {X, Y} = generate_empty_point(Maze),
+    
+    case is_monster(Maze, X, Y) of
+        false ->
+            {X, Y};
+        true ->
+            generate_unoccupied_point(Maze)
+    end.
+    
 generate_maze(IsLastLevel) ->
     FirstRoom = [generate_room()],
     generate_maze(IsLastLevel, FirstRoom, ?MazeComplexity).
@@ -195,7 +206,7 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
     end.
 
 generate_monsters(Maze) ->
-    {X, Y} = maze:generate_empty_point(Maze),
+    {X, Y} = maze:generate_unoccupied_point(Maze),
     [{monster, {X, Y}, {orc, rand:uniform(?MonsterStrength)}}] ++ Maze.
 
 remove_item(Maze, X, Y) ->
@@ -227,8 +238,6 @@ is_empty([{stairs, {X, Y}} | _T], X, Y) ->
     true;
 is_empty([{item, {X, Y}, _} | _T], X, Y) ->
     true;
-is_empty([{monster, {X, Y}, _} | _T], X, Y) ->
-    false;
 is_empty([{corridor, {{X1, Y1}, {X2, Y2}}} | _T], X, Y) when
     X1 =< X, Y1 =< Y, X2 >= X, Y2 >= Y ->
     true;
@@ -283,6 +292,13 @@ is_monster([_H | T], X, Y) ->
     is_monster(T, X, Y);
 is_monster([], _X, _Y) ->
     false.
+
+get_monster([{monster, {X, Y}, _} = Monster | _T], X, Y) ->
+    Monster;
+get_monster([_H | T], X, Y) ->
+    get_monster(T, X, Y);
+get_monster([], _X, _Y) ->
+    undefined.
 
 is_edge(X, Y) when
     X == 1; Y == 1; X == ?BoardWidth; Y == ?BoardHeight ->

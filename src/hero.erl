@@ -8,7 +8,7 @@
 -define(InitialStrength, 100).
 
 initialize_hero_position(Maze) ->
-    maze:generate_empty_point(Maze).
+    maze:generate_unoccupied_point(Maze).
 
 initialize_hero(Maze) -> #{
     items => [],

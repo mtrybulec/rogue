@@ -9,7 +9,8 @@
     draw_board/1,
     draw_info/1,
     update/3,
-    move/3,
+    move_hero/3,
+    move_monster/4,
     get_command/1,
     
     welcome/0,
@@ -169,29 +170,41 @@ draw_hero(Hero) ->
 
 update(Maze, X, Y) ->
     goto_xy(X, Y),
-    case maze:is_door(Maze, X, Y) of
+    case maze:is_monster(Maze, X, Y) of
         true ->
-            io:format(?DoorChar);
+            Monster = maze:get_monster(Maze, X, Y),
+            draw_monsters([Monster]);
         false ->
-            case maze:is_stairs(Maze, X, Y) of
+            case maze:is_door(Maze, X, Y) of
                 true ->
-                    io:format(?StairsChar);
+                    io:format(?DoorChar);
                 false ->
-                    case maze:is_item(Maze, X, Y) of
+                    case maze:is_stairs(Maze, X, Y) of
                         true ->
-                            io:format(?TreasureChar);
+                            io:format(?StairsChar);
                         false ->
-                            io:format(?EmptyChar)
+                            case maze:is_item(Maze, X, Y) of
+                                true ->
+                                    io:format(?TreasureChar);
+                                false ->
+                                    io:format(?EmptyChar)
+                            end
                     end
             end
     end.
 
-move(_Maze, {X, Y}, {X, Y}) ->
+move_hero(_Maze, {X, Y}, {X, Y}) ->
     ok;
-move(Maze, {OldX, OldY}, {NewX, NewY}) ->
+move_hero(Maze, {OldX, OldY}, {NewX, NewY}) ->
     update(Maze, OldX, OldY),
     goto_xy(NewX, NewY),
     io:format(?HeroChar).
+
+move_monster(_Maze, {X, Y}, {X, Y}, _MonsterType) ->
+    ok;
+move_monster(Maze, {OldX, OldY}, {NewX, NewY}, MonsterType) ->
+    update(Maze, OldX, OldY),
+    draw_monsters([{monster, {NewX, NewY}, {MonsterType, undefined}}]).
 
 get_command_char() ->
     goto_xy(0, ?CommandRow),
@@ -216,6 +229,8 @@ get_command(Game) ->
             collect_item;
         "h" ->
             show_hoard;
+        "b" ->
+            show_board;
         "d" ->
             show_debug_info;
         "r" ->
@@ -239,6 +254,10 @@ get_command(Game) ->
     end,
     
     case Command of
+        show_board ->
+            clear_screen(),
+            draw_board(Game),
+            get_command(Game);
         show_hoard ->
             hoard(Game),
             get_command(Game);
