@@ -82,7 +82,7 @@ get_vicinity(Game, Command) ->
     
     {IsEmptyOrt1, IsEmptyOrt2}.
 
-perform_command(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
+perform_command(Game, Command, Running, Vicinity) ->
     {GameHeroMoved, RunningHeroMoved} = case Command of
         collect_item ->
             {collect_item(Game), false};
@@ -98,44 +98,7 @@ perform_command(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
         take_stairs ->
             GameHeroMoved;
         _ ->
-            HeroMoved = maps:get(hero, GameHeroMoved),
-            StrengthHeroMoved = maps:get(strength, HeroMoved),
-
-            case StrengthHeroMoved =< 0 orelse not RunningHeroMoved of
-                true ->
-                    GameHeroMoved;
-                false ->
-                    MazeHeroMoved = maps:get(maze, GameHeroMoved),
-                    {X, Y} = maps:get(position, HeroMoved),
-                    {DeltaX, DeltaY} = direction_to_deltas(Command),
-    
-                    {StopRunning, NewIsEmptyOrt1, NewIsEmptyOrt2} =
-                        stop_running(MazeHeroMoved, X, Y, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
-
-                    case StopRunning of
-                        false ->
-                            perform_command(GameHeroMoved, Command, true, {NewIsEmptyOrt1, NewIsEmptyOrt2});
-                        true ->
-                            NewCommand = case restart_running_after_turn(MazeHeroMoved, X, Y, DeltaX, DeltaY, 1) of
-                                true ->
-                                    deltas_to_direction(DeltaY, DeltaX);
-                                false ->
-                                    case restart_running_after_turn(MazeHeroMoved, X, Y, DeltaX, DeltaY, -1) of
-                                        true ->
-                                            deltas_to_direction(-DeltaY, -DeltaX);
-                                        false ->
-                                            undefined
-                                    end
-                            end,
-            
-                            case NewCommand of
-                                undefined ->
-                                    GameHeroMoved;
-                                _ ->
-                                    perform_command(GameHeroMoved, NewCommand, true, get_vicinity(GameHeroMoved, NewCommand))
-                            end
-                    end
-            end
+            continue_running(GameHeroMoved, Command, RunningHeroMoved, Vicinity)
     end.
 
 collect_item(Game) ->
@@ -319,6 +282,46 @@ handle_monsters_move([H | T], {X, Y}, Strength, NewMaze) ->
     handle_monsters_move(T, {X, Y}, Strength, [H] ++ NewMaze);
 handle_monsters_move([], {_X, _Y}, Strength, NewMaze) ->
     {NewMaze, Strength}.
+
+continue_running(GameHeroMoved, Command, RunningHeroMoved, {IsEmptyOrt1, IsEmptyOrt2}) ->
+    HeroMoved = maps:get(hero, GameHeroMoved),
+    StrengthHeroMoved = maps:get(strength, HeroMoved),
+    
+    case StrengthHeroMoved =< 0 orelse not RunningHeroMoved of
+        true ->
+            GameHeroMoved;
+        false ->
+            MazeHeroMoved = maps:get(maze, GameHeroMoved),
+            {X, Y} = maps:get(position, HeroMoved),
+            {DeltaX, DeltaY} = direction_to_deltas(Command),
+            
+            {StopRunning, NewIsEmptyOrt1, NewIsEmptyOrt2} =
+                stop_running(MazeHeroMoved, X, Y, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
+            
+            case StopRunning of
+                false ->
+                    perform_command(GameHeroMoved, Command, true, {NewIsEmptyOrt1, NewIsEmptyOrt2});
+                true ->
+                    NewCommand = case restart_running_after_turn(MazeHeroMoved, X, Y, DeltaX, DeltaY, 1) of
+                        true ->
+                            deltas_to_direction(DeltaY, DeltaX);
+                        false ->
+                            case restart_running_after_turn(MazeHeroMoved, X, Y, DeltaX, DeltaY, -1) of
+                                true ->
+                                    deltas_to_direction(-DeltaY, -DeltaX);
+                                false ->
+                                    undefined
+                            end
+                    end,
+                    
+                    case NewCommand of
+                        undefined ->
+                            GameHeroMoved;
+                        _ ->
+                            perform_command(GameHeroMoved, NewCommand, true, get_vicinity(GameHeroMoved, NewCommand))
+                    end
+            end
+    end.
 
 direction_to_deltas(Direction) ->
     case Direction of
