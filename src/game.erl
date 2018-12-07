@@ -83,6 +83,9 @@ get_vicinity(Game, Command) ->
     {IsEmptyOrt1, IsEmptyOrt2}.
 
 perform_command(Game, Command, Running, Vicinity) ->
+    Hero = maps:get(hero, Game),
+    Level = maps:get(level, Hero),
+
     {GameHeroMoved, RunningHeroMoved} = case Command of
         collect_item ->
             {collect_item(Game), false};
@@ -93,33 +96,40 @@ perform_command(Game, Command, Running, Vicinity) ->
     end,
     
     HeroMoved = maps:get(hero, GameHeroMoved),
-    StrengthHeroMoved = maps:get(strength, HeroMoved),
+    HeroMovedLevel = maps:get(level, HeroMoved),
     
-    GameMonstersMoved = case StrengthHeroMoved =< 0 of
-        true ->
-            GameHeroMoved;
+    case Level == HeroMovedLevel of
         false ->
-            MazeHeroMoved = maps:get(maze, GameHeroMoved),
-            PositionHeroMoved = maps:get(position, HeroMoved),
+            GameHeroMoved;
+        true ->
+            StrengthHeroMoved = maps:get(strength, HeroMoved),
+    
+            GameMonstersMoved = case StrengthHeroMoved =< 0 of
+                true ->
+                    GameHeroMoved;
+                false ->
+                    MazeHeroMoved = maps:get(maze, GameHeroMoved),
+                    PositionHeroMoved = maps:get(position, HeroMoved),
             
-            {MazeMonstersMoved, StrengthMonstersMoved} =
-                handle_monsters_move(MazeHeroMoved, PositionHeroMoved, StrengthHeroMoved),
+                    {MazeMonstersMoved, StrengthMonstersMoved} =
+                        handle_monsters_move(MazeHeroMoved, PositionHeroMoved, StrengthHeroMoved),
             
-            GameHeroMoved#{
-                maze => MazeMonstersMoved,
-                hero => HeroMoved#{
-                    strength => StrengthMonstersMoved
-                }
-            }
-    end,
-        
-    case Command of
-        collect_item ->
-            GameMonstersMoved;
-        take_stairs ->
-            GameMonstersMoved;
-        _ ->
-            continue_running(GameMonstersMoved, Command, RunningHeroMoved, Vicinity)
+                    GameHeroMoved#{
+                        maze => MazeMonstersMoved,
+                        hero => HeroMoved#{
+                            strength => StrengthMonstersMoved
+                        }
+                    }
+            end,
+    
+            case Command of
+                collect_item ->
+                    GameMonstersMoved;
+                take_stairs ->
+                    GameMonstersMoved;
+                _ ->
+                    continue_running(GameMonstersMoved, Command, RunningHeroMoved, Vicinity)
+            end
     end.
 
 collect_item(Game) ->
