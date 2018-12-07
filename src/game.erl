@@ -56,28 +56,29 @@ play(Game) ->
                             console:quit(),
                             quit;
                         _ ->
-                            NewGame = perform_command(Game, Command, Running, undefined),
-                            play(NewGame)
+                            GameNextTurn = increment_turn(Game),
+                            GamePerformedCommand = perform_command(GameNextTurn, Command, Running, undefined),
+                            play(GamePerformedCommand)
                     end
             end
     end.
 
-perform_command(Game, Command, Running, Vicinity) ->
+increment_turn(Game) ->
     Stats = maps:get(stats, Game),
     NewStats = Stats#{
         turn => maps:get(turn, Stats) + 1
     },
+    Game#{stats => NewStats}.
 
-    GameAfterCommand = case Command of
+perform_command(Game, Command, Running, Vicinity) ->
+    case Command of
         collect_item ->
             collect_item(Game);
         take_stairs ->
             take_stairs(Game);
         _ ->
             move(Game, Command, Running, Vicinity)
-    end,
-    
-    GameAfterCommand#{stats => NewStats}.
+    end.
     
 collect_item(Game) ->
     Hero = maps:get(hero, Game),
