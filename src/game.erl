@@ -219,18 +219,23 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
                                 false ->
                                     perform_command(GameMonstersMoved, Command, true, {NewIsEmptyOrt1, NewIsEmptyOrt2});
                                 true ->
-                                    case restart_running_after_turn(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, 1) of
+                                    NewCommand = case restart_running_after_turn(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, 1) of
                                         true ->
-                                            NewCommand = deltas_to_direction(DeltaY, DeltaX),
-                                            perform_command(GameMonstersMoved, NewCommand, true, undefined);
+                                            deltas_to_direction(DeltaY, DeltaX);
                                         false ->
                                             case restart_running_after_turn(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, -1) of
                                                 true ->
-                                                    NewCommand = deltas_to_direction(-DeltaY, -DeltaX),
-                                                    perform_command(GameMonstersMoved, NewCommand, true, undefined);
+                                                    deltas_to_direction(-DeltaY, -DeltaX);
                                                 false ->
-                                                    GameMonstersMoved
+                                                    undefined
                                             end
+                                    end,
+                                    
+                                    case NewCommand of
+                                        undefined ->
+                                            GameMonstersMoved;
+                                        _ ->
+                                            perform_command(GameMonstersMoved, NewCommand, true, undefined)
                                     end
                             end;
                         false ->
