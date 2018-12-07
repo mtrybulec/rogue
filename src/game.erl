@@ -57,7 +57,7 @@ play(Game) ->
                             quit;
                         _ ->
                             GameNextTurn = increment_turn(Game),
-                            GamePerformedCommand = perform_command(GameNextTurn, Command, Running, undefined),
+                            GamePerformedCommand = perform_command(GameNextTurn, Command, Running, get_vicinity(GameNextTurn, Command)),
                             play(GamePerformedCommand)
                     end
             end
@@ -70,16 +70,74 @@ increment_turn(Game) ->
     },
     Game#{stats => NewStats}.
 
-perform_command(Game, Command, Running, Vicinity) ->
+get_vicinity(Game, Command) ->
+    Maze = maps:get(maze, Game),
+    Hero = maps:get(hero, Game),
+    
+    {X, Y} = maps:get(position, Hero),
+    {DeltaX, DeltaY} = direction_to_deltas(Command),
+    
+    IsEmptyOrt1 = maze:is_empty(Maze, X + DeltaY, Y + DeltaX),
+    IsEmptyOrt2 = maze:is_empty(Maze, X - DeltaY, Y - DeltaX),
+    
+    {IsEmptyOrt1, IsEmptyOrt2}.
+
+perform_command(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
+    {GameHeroMoved, RunningHeroMoved} = case Command of
+        collect_item ->
+            {collect_item(Game), false};
+        take_stairs ->
+            {take_stairs(Game), false};
+        _ ->
+            move(Game, Command, Running)
+    end,
+    
     case Command of
         collect_item ->
-            collect_item(Game);
+            GameHeroMoved;
         take_stairs ->
-            take_stairs(Game);
+            GameHeroMoved;
         _ ->
-            move(Game, Command, Running, Vicinity)
-    end.
+            HeroMoved = maps:get(hero, GameHeroMoved),
+            StrengthHeroMoved = maps:get(strength, HeroMoved),
+
+            case StrengthHeroMoved =< 0 orelse not RunningHeroMoved of
+                true ->
+                    GameHeroMoved;
+                false ->
+                    MazeHeroMoved = maps:get(maze, GameHeroMoved),
+                    {X, Y} = maps:get(position, HeroMoved),
+                    {DeltaX, DeltaY} = direction_to_deltas(Command),
     
+                    {StopRunning, NewIsEmptyOrt1, NewIsEmptyOrt2} =
+                        stop_running(MazeHeroMoved, X, Y, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
+
+                    case StopRunning of
+                        false ->
+                            perform_command(GameHeroMoved, Command, true, {NewIsEmptyOrt1, NewIsEmptyOrt2});
+                        true ->
+                            NewCommand = case restart_running_after_turn(MazeHeroMoved, X, Y, DeltaX, DeltaY, 1) of
+                                true ->
+                                    deltas_to_direction(DeltaY, DeltaX);
+                                false ->
+                                    case restart_running_after_turn(MazeHeroMoved, X, Y, DeltaX, DeltaY, -1) of
+                                        true ->
+                                            deltas_to_direction(-DeltaY, -DeltaX);
+                                        false ->
+                                            undefined
+                                    end
+                            end,
+            
+                            case NewCommand of
+                                undefined ->
+                                    GameHeroMoved;
+                                _ ->
+                                    perform_command(GameHeroMoved, NewCommand, true, get_vicinity(GameHeroMoved, NewCommand))
+                            end
+                    end
+            end
+    end.
+
 collect_item(Game) ->
     Hero = maps:get(hero, Game),
     Maze = maps:get(maze, Game),
@@ -154,18 +212,7 @@ take_stairs(Game) ->
             }
     end.
 
-move(Game, Command, Running, undefined) ->
-    Maze = maps:get(maze, Game),
-    Hero = maps:get(hero, Game),
-   
-    {X, Y} = maps:get(position, Hero),
-    {DeltaX, DeltaY} = direction_to_deltas(Command),
-   
-    IsEmptyOrt1 = maze:is_empty(Maze, X + DeltaY, Y + DeltaX),
-    IsEmptyOrt2 = maze:is_empty(Maze, X - DeltaY, Y - DeltaX),
-    
-    move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2});
-move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
+move(Game, Command, Running) ->
     Hero = maps:get(hero, Game),
     Maze = maps:get(maze, Game),
     {X, Y} = maps:get(position, Hero),
@@ -194,55 +241,21 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     
     console:move_hero(MazeHeroMoved, {X, Y}, NewPosition),
 
-    case StrengthHeroMoved =< 0 of
+    GameMonstersMoved = case StrengthHeroMoved =< 0 of
         true ->
             GameHeroMoved;
         false ->
             {MazeMonstersMoved, StrengthMonstersMoved} = handle_monsters_move(MazeHeroMoved, NewPosition, StrengthHeroMoved),
 
-            GameMonstersMoved = GameHeroMoved#{
+            GameHeroMoved#{
                 maze => MazeMonstersMoved,
                 hero => HeroHeroMoved#{
                     strength => StrengthMonstersMoved
                 }
-            },
-    
-            case StrengthMonstersMoved =< 0 of
-                true ->
-                    GameMonstersMoved;
-                false ->
-                    case RunningHeroMoved of
-                        true ->
-                            {StopRunning, NewIsEmptyOrt1, NewIsEmptyOrt2} =
-                                stop_running(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
-                            case StopRunning of
-                                false ->
-                                    perform_command(GameMonstersMoved, Command, true, {NewIsEmptyOrt1, NewIsEmptyOrt2});
-                                true ->
-                                    NewCommand = case restart_running_after_turn(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, 1) of
-                                        true ->
-                                            deltas_to_direction(DeltaY, DeltaX);
-                                        false ->
-                                            case restart_running_after_turn(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, -1) of
-                                                true ->
-                                                    deltas_to_direction(-DeltaY, -DeltaX);
-                                                false ->
-                                                    undefined
-                                            end
-                                    end,
-                                    
-                                    case NewCommand of
-                                        undefined ->
-                                            GameMonstersMoved;
-                                        _ ->
-                                            perform_command(GameMonstersMoved, NewCommand, true, undefined)
-                                    end
-                            end;
-                        false ->
-                            GameMonstersMoved
-                    end
-            end
-    end.
+            }
+    end,
+
+    {GameMonstersMoved, RunningHeroMoved}.
 
 handle_hero_move(Maze, {X, Y}, Strength, Running) ->
     case maze:is_empty(Maze, X, Y) of
@@ -316,7 +329,9 @@ direction_to_deltas(Direction) ->
         move_west ->
             {-1, 0};
         move_east ->
-            {1, 0}
+            {1, 0};
+        _ ->
+            {0, 0}
     end.
 
 deltas_to_direction(DeltaX, DeltaY) ->
