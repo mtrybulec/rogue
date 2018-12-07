@@ -55,19 +55,25 @@ play(Game) ->
                         quit_game ->
                             console:quit(),
                             quit;
-                        collect_item ->
-                            NewGame = collect_item(Game),
-                            play(NewGame);
-                        take_stairs ->
-                            NewGame = take_stairs(Game),
-                            play(NewGame);
                         _ ->
-                            NewGame = move(Game, Command, Running, undefined),
+                            NewGame = perform_command(Game, Command, Running, undefined),
                             play(NewGame)
                     end
             end
     end.
 
+perform_command(Game, Command, Running, Vicinity) ->
+    GameAfterCommand = case Command of
+        collect_item ->
+            collect_item(Game);
+        take_stairs ->
+            take_stairs(Game);
+        _ ->
+            move(Game, Command, Running, Vicinity)
+    end,
+    
+    GameAfterCommand.
+    
 collect_item(Game) ->
     Hero = maps:get(hero, Game),
     Stats = maps:get(stats, Game),
@@ -223,17 +229,17 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
                                 stop_running(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
                             case StopRunning of
                                 false ->
-                                    move(GameMonstersMoved, Command, true, {NewIsEmptyOrt1, NewIsEmptyOrt2});
+                                    perform_command(GameMonstersMoved, Command, true, {NewIsEmptyOrt1, NewIsEmptyOrt2});
                                 true ->
                                     case restart_running_after_turn(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, 1) of
                                         true ->
                                             NewCommand = deltas_to_direction(DeltaY, DeltaX),
-                                            move(GameMonstersMoved, NewCommand, true, undefined);
+                                            perform_command(GameMonstersMoved, NewCommand, true, undefined);
                                         false ->
                                             case restart_running_after_turn(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, -1) of
                                                 true ->
                                                     NewCommand = deltas_to_direction(-DeltaY, -DeltaX),
-                                                    move(GameMonstersMoved, NewCommand, true, undefined);
+                                                    perform_command(GameMonstersMoved, NewCommand, true, undefined);
                                                 false ->
                                                     GameMonstersMoved
                                             end

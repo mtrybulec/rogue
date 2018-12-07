@@ -10,4 +10,3 @@ generate_point() ->
     X = rand:uniform(?BoardWidth),
     Y = rand:uniform(?BoardHeight),
     {X, Y}.
-
