@@ -197,7 +197,7 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
         true ->
             GameHeroMoved;
         false ->
-            {MazeMonstersMoved, StrengthMonstersMoved, RunningMonstersMoved} = handle_monsters_move(MazeHeroMoved, NewPosition, StrengthHeroMoved, RunningHeroMoved),
+            {MazeMonstersMoved, StrengthMonstersMoved} = handle_monsters_move(MazeHeroMoved, NewPosition, StrengthHeroMoved),
 
             GameMonstersMoved = GameHeroMoved#{
                 maze => MazeMonstersMoved,
@@ -210,7 +210,7 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
                 true ->
                     GameMonstersMoved;
                 false ->
-                    case RunningMonstersMoved of
+                    case RunningHeroMoved of
                         true ->
                             {StopRunning, NewIsEmptyOrt1, NewIsEmptyOrt2} =
                                 stop_running(MazeMonstersMoved, NewX, NewY, DeltaX, DeltaY, IsEmptyOrt1, IsEmptyOrt2),
@@ -272,10 +272,10 @@ handle_hero_move(Maze, {X, Y}, Strength, Running) ->
             end
     end.
 
-handle_monsters_move(Maze, {X, Y}, Strength, Running) ->
-    handle_monsters_move(Maze, {X, Y}, Strength, Running, []).
+handle_monsters_move(Maze, {X, Y}, Strength) ->
+    handle_monsters_move(Maze, {X, Y}, Strength, []).
 
-handle_monsters_move([{monster, {MX, MY}, {MonsterType, MonsterStrength}} = Monster | T], {HX, HY}, Strength, Running, NewMaze) ->
+handle_monsters_move([{monster, {MX, MY}, {MonsterType, MonsterStrength}} = Monster | T], {HX, HY}, Strength, NewMaze) ->
     {NewStrength, NewMonster} = case (abs(MX - HX) == 1 andalso abs(MY - HY) == 0) orelse
                                      (abs(MX - HX) == 0 andalso abs(MY - HY) == 1) of
         true ->
@@ -295,11 +295,11 @@ handle_monsters_move([{monster, {MX, MY}, {MonsterType, MonsterStrength}} = Mons
                     {Strength, Monster}
             end
     end,
-    handle_monsters_move(T, {HX, HY}, NewStrength, Running, [NewMonster] ++ NewMaze);
-handle_monsters_move([H | T], {X, Y}, Strength, Running, NewMaze) ->
-    handle_monsters_move(T, {X, Y}, Strength, Running, [H] ++ NewMaze);
-handle_monsters_move([], {_X, _Y}, Strength, Running, NewMaze) ->
-    {NewMaze, Strength, Running}.
+    handle_monsters_move(T, {HX, HY}, NewStrength, [NewMonster] ++ NewMaze);
+handle_monsters_move([H | T], {X, Y}, Strength, NewMaze) ->
+    handle_monsters_move(T, {X, Y}, Strength, [H] ++ NewMaze);
+handle_monsters_move([], {_X, _Y}, Strength, NewMaze) ->
+    {NewMaze, Strength}.
 
 direction_to_deltas(Direction) ->
     case Direction of
