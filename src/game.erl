@@ -63,6 +63,11 @@ play(Game) ->
     end.
 
 perform_command(Game, Command, Running, Vicinity) ->
+    Stats = maps:get(stats, Game),
+    NewStats = Stats#{
+        turn => maps:get(turn, Stats) + 1
+    },
+
     GameAfterCommand = case Command of
         collect_item ->
             collect_item(Game);
@@ -72,14 +77,10 @@ perform_command(Game, Command, Running, Vicinity) ->
             move(Game, Command, Running, Vicinity)
     end,
     
-    GameAfterCommand.
+    GameAfterCommand#{stats => NewStats}.
     
 collect_item(Game) ->
     Hero = maps:get(hero, Game),
-    Stats = maps:get(stats, Game),
-    NewStats = Stats#{
-        turn => maps:get(turn, Stats) + 1
-    },
     Maze = maps:get(maze, Game),
     {X, Y} = maps:get(position, Hero),
     Strength = maps:get(strength, Hero),
@@ -101,24 +102,18 @@ collect_item(Game) ->
                 hero => Hero#{
                     items => [Item] ++ Items,
                     strength => NewStrength
-                },
-                stats => NewStats
+                }
             };
         false ->
             NewStrength = Strength - ?StrengthLossOnInvalidCommand,
             
             Game#{
-                hero => Hero#{strength => NewStrength},
-                stats => NewStats
+                hero => Hero#{strength => NewStrength}
             }
     end.
 
 take_stairs(Game) ->
     Hero = maps:get(hero, Game),
-    Stats = maps:get(stats, Game),
-    NewStats = Stats#{
-        turn => maps:get(turn, Stats) + 1
-    },
     Maze = maps:get(maze, Game),
     {X, Y} = maps:get(position, Hero),
     Strength = maps:get(strength, Hero),
@@ -143,8 +138,7 @@ take_stairs(Game) ->
                     level => NewLevel,
                     position => Position,
                     strength => NewStrength
-                },
-                stats => NewStats
+                }
             },
             
             console:clear_screen(),
@@ -155,8 +149,7 @@ take_stairs(Game) ->
             NewStrength = Strength - ?StrengthLossOnInvalidCommand,
             
             Game#{
-                hero => Hero#{strength => NewStrength},
-                stats => NewStats
+                hero => Hero#{strength => NewStrength}
             }
     end.
 
@@ -173,10 +166,6 @@ move(Game, Command, Running, undefined) ->
     move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2});
 move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     Hero = maps:get(hero, Game),
-    Stats = maps:get(stats, Game),
-    NewStats = Stats#{
-        turn => maps:get(turn, Stats) + 1
-    },
     Maze = maps:get(maze, Game),
     {X, Y} = maps:get(position, Hero),
     {DeltaX, DeltaY} = direction_to_deltas(Command),
@@ -199,8 +188,7 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
     },
     GameHeroMoved = Game#{
         maze => MazeHeroMoved,
-        hero => HeroHeroMoved,
-        stats => NewStats
+        hero => HeroHeroMoved
     },
     
     console:move_hero(MazeHeroMoved, {X, Y}, NewPosition),
@@ -215,8 +203,7 @@ move(Game, Command, Running, {IsEmptyOrt1, IsEmptyOrt2}) ->
                 maze => MazeMonstersMoved,
                 hero => HeroHeroMoved#{
                     strength => StrengthMonstersMoved
-                },
-                stats => NewStats
+                }
             },
     
             case StrengthMonstersMoved =< 0 of
