@@ -4,17 +4,13 @@
     play/0
 ]).
 
--define(LevelCount, 3).
 -define(ReciprocalStrengthLossOnMove, 10).
 -define(StrengthLossOnInvalidCommand, 1).
 -define(StrengthLossOnAttack, 1).
 -define(HitStrength, 6).
 
-is_last_level(Level) ->
-    Level >= ?LevelCount.
-
 play() ->
-    Maze = maze:generate_maze(is_last_level(1)),
+    Maze = maze:generate_maze(1),
     Hero = hero:initialize_hero(Maze),
     Game = #{
         maze => Maze,
@@ -175,7 +171,7 @@ take_stairs(Game) ->
         true ->
             Level = maps:get(level, Hero),
             NewLevel = Level + 1,
-            NewMaze = maze:generate_maze(is_last_level(NewLevel)),
+            NewMaze = maze:generate_maze(NewLevel),
             Position = hero:initialize_hero_position(NewMaze),
             
             NewStrength = case rand:uniform(?ReciprocalStrengthLossOnMove) of

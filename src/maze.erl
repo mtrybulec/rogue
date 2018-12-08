@@ -16,6 +16,7 @@
 
 -include("board.hrl").
 
+-define(LevelCount, 3).
 -define(MazeComplexity, 10).
 -define(MaxRoomWidth, 30).
 -define(MinRoomWidth, 3).
@@ -46,18 +47,18 @@ generate_unoccupied_point(Maze) ->
             generate_unoccupied_point(Maze)
     end.
     
-generate_maze(IsLastLevel) ->
+generate_maze(Level) ->
     FirstRoom = [generate_room()],
-    generate_maze(IsLastLevel, FirstRoom, ?MazeComplexity).
+    generate_maze(Level, FirstRoom, ?MazeComplexity).
 
-generate_maze(false, Maze, 0) ->
+generate_maze(Level, Maze, 0) when Level < ?LevelCount ->
     NewMaze = [generate_stairs(Maze)] ++ Maze,
     generate_monsters(NewMaze);
-generate_maze(true, Maze, 0) ->
+generate_maze(_, Maze, 0) ->
     NewMaze = [generate_treasure(Maze)] ++ Maze,
     generate_monsters(NewMaze);
-generate_maze(IsLastLevel, Maze, Trials) ->
-    generate_maze(IsLastLevel, generate_door(Maze) ++ Maze, Trials - 1).
+generate_maze(Level, Maze, Trials) ->
+    generate_maze(Level, generate_door(Maze) ++ Maze, Trials - 1).
 
 generate_stairs(Maze) ->
     {X, Y} = generate_empty_point(Maze),
