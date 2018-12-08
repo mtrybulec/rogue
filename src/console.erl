@@ -152,13 +152,14 @@ draw_items([_ | T]) ->
 draw_items([]) ->
     ok.
 
-draw_monsters([{monster, {X, Y}, {Monster, _Strength}} | _T]) ->
+draw_monsters([{monster, {X, Y}, {Monster, _Strength}} | T]) ->
     goto_xy(X, Y),
     MonsterChar = case Monster of
         orc ->
             "O"
     end,
-    io:format(MonsterChar);
+    io:format(MonsterChar),
+    draw_monsters(T);
 draw_monsters([_ | T]) ->
     draw_monsters(T);
 draw_monsters([]) ->

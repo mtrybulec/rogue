@@ -51,12 +51,17 @@ generate_maze(Level) ->
     FirstRoom = [generate_room()],
     generate_maze(Level, FirstRoom, ?MazeComplexity).
 
-generate_maze(Level, Maze, 0) when Level < ?LevelCount ->
-    NewMaze = [generate_stairs(Maze)] ++ Maze,
-    generate_monsters(NewMaze);
-generate_maze(_, Maze, 0) ->
-    NewMaze = [generate_treasure(Maze)] ++ Maze,
-    generate_monsters(NewMaze);
+monster_count_per_level(Level) ->
+    Level * 2.
+
+generate_maze(Level, Maze, 0) ->
+    AdditionalObjects = case Level < ?LevelCount of
+        true ->
+            [generate_stairs(Maze)];
+        false ->
+            [generate_treasure(Maze)]
+    end,
+    generate_monsters(AdditionalObjects ++ Maze, monster_count_per_level(Level));
 generate_maze(Level, Maze, Trials) ->
     generate_maze(Level, generate_door(Maze) ++ Maze, Trials - 1).
 
@@ -207,9 +212,12 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
             [Segment] ++ generate_corridor([Segment] ++ Maze, EndX, EndY, DeltaY * DeltaChange, DeltaX * DeltaChange, SegmentCount - 1)
     end.
 
-generate_monsters(Maze) ->
+generate_monsters(Maze, 0) ->
+    Maze;
+generate_monsters(Maze, Count) ->
     {X, Y} = maze:generate_unoccupied_point(Maze),
-    [{monster, {X, Y}, {orc, rand:uniform(?MonsterStrength)}}] ++ Maze.
+    NewMaze = [{monster, {X, Y}, {orc, rand:uniform(?MonsterStrength)}}] ++ Maze,
+    generate_monsters(NewMaze, Count - 1).
 
 remove_item(Maze, X, Y) ->
     remove_item(Maze, X, Y, {undefined, []}).
