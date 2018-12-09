@@ -216,7 +216,13 @@ generate_monsters(Maze, 0) ->
     Maze;
 generate_monsters(Maze, Count) ->
     {X, Y} = maze:generate_unoccupied_point(Maze),
-    NewMaze = [{monster, {X, Y}, {orc, rand:uniform(?MonsterStrength)}}] ++ Maze,
+    MonsterType = case rand:uniform(2) of
+        1 ->
+            orc;
+        2 ->
+            goblin
+    end,
+    NewMaze = [{monster, {X, Y}, {MonsterType, rand:uniform(?MonsterStrength)}}] ++ Maze,
     generate_monsters(NewMaze, Count - 1).
 
 remove_item(Maze, X, Y) ->

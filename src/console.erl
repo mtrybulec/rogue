@@ -155,6 +155,8 @@ draw_items([]) ->
 draw_monsters([{monster, {X, Y}, {Monster, _Strength}} | T]) ->
     goto_xy(X, Y),
     MonsterChar = case Monster of
+        goblin ->
+            "G";
         orc ->
             "O"
     end,
