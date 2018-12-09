@@ -25,7 +25,6 @@
 -define(MaxCorridorSegmentCount, 10).
 -define(MaxCorridorSegmentLength, 10).
 -define(ReciprocalDeadEnd, 5).
--define(MonsterStrength, 10).
 
 generate_empty_point(Maze) ->
     {X, Y} = board:generate_point(),
@@ -215,14 +214,14 @@ generate_corridor(Maze, X, Y, DeltaX, DeltaY, SegmentCount) ->
 generate_monsters(Maze, 0) ->
     Maze;
 generate_monsters(Maze, Count) ->
-    {X, Y} = maze:generate_unoccupied_point(Maze),
-    MonsterType = case rand:uniform(2) of
+    MonsterCoords = maze:generate_unoccupied_point(Maze),
+    MonsterProps = case rand:uniform(3) of
         1 ->
-            orc;
-        2 ->
-            goblin
+            {orc, rand:uniform(10)};
+        _ ->
+            {goblin, rand:uniform(5)}
     end,
-    NewMaze = [{monster, {X, Y}, {MonsterType, rand:uniform(?MonsterStrength)}}] ++ Maze,
+    NewMaze = [{monster, MonsterCoords, MonsterProps}] ++ Maze,
     generate_monsters(NewMaze, Count - 1).
 
 remove_item(Maze, X, Y) ->
